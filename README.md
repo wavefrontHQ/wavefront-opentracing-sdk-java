@@ -8,25 +8,25 @@ This library provides open tracing support for Wavefront.
 ```
 Tracer tracer = new WavefrontTracer.Builder().build();
 ```
-
-The builder pattern can be used to customize the reporter:
+The builder pattern can be used to customize the reporter.
 
 ```
 # Proxy reporter
-Reporter proxyReporter = new WavefrontTraceReporter.Builder().
+Reporter proxyReporter = new WavefrontProxyReporter.Builder().
   withSource("wavefront-tracing-example").
-  buildProxy("proxyHostName", proxyPort);
+  build("proxyHostName", proxyTracingPort);
 
 # Direct reporter
-Reporter directReporter = new WavefrontTraceReporter.Builder().
+Reporter directReporter = new WavefrontDirectReporter.Builder().
   withSource("wavefront-tracing-example").
-  buildDirect("clusterName.wavefront.com", "WAVEFRONT_TOKEN_HERE");
+  buildDirect("clusterName.wavefront.com", "WAVEFRONT_API_TOKEN");
 
-# Console reporter
+# Composite reporter
 Reporter consoleReporter = new ConsoleReporter("sourceName");
+Reporter compositeReporter = new CompositeReporter(directReporter, consoleReporter);
 
 # Initialize the tracer with a specific reporter
 Tracer tracer = new WavefrontTracer.Builder().
-  withReporter(proxyReporter).
+  withReporter(directReporter).
   build();
 ```
