@@ -40,8 +40,8 @@ public abstract class BaseWavefrontReporter implements Reporter {
         map(WavefrontSpanContext::getSpanId).
         collect(Collectors.toList());
 
-    sender.sendSpan(span.getOperationName(), span.getStartTimeMicros()/1000,
-        span.getDurationMicroseconds()/1000, source, ctx.getTraceId(), ctx.getSpanId(), parents,
-        follows, span.getTagsAsList(),null);
+    sender.sendSpan(span.getOperationName(), span.getStartTimeMicros() / 1000,
+        span.getDurationMicroseconds() / 1000, source, ctx.getTraceId(), ctx.getSpanId(), parents,
+        follows, span.getTagsAsList(), null);
   }
 }

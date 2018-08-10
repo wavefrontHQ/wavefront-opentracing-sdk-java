@@ -137,12 +137,12 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
   }
 
   private WavefrontSpanContext createSpanContext() {
-    UUID traceId = getTraceId();
+    UUID traceId = traceAncestry();
     UUID spanId = UUID.randomUUID();
     return new WavefrontSpanContext(traceId, spanId);
   }
 
-  private UUID getTraceId() {
+  private UUID traceAncestry() {
     if (parents != null && !parents.isEmpty()) {
       // prefer child_of relationship for assigning traceId
       return parents.get(0).getSpanContext().getTraceId();

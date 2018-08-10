@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
+
 import io.opentracing.Span;
 
 /**
@@ -17,6 +20,7 @@ import io.opentracing.Span;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
+@ThreadSafe
 public class WavefrontSpan implements Span {
 
   private final WavefrontTracer tracer;
@@ -102,6 +106,7 @@ public class WavefrontSpan implements Span {
   }
 
   @Override
+  @Nullable
   public synchronized String getBaggageItem(String key) {
     return this.spanContext.getBaggageItem(key);
   }
