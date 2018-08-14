@@ -2,6 +2,7 @@ package com.wavefront.opentracing.propagation;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import io.opentracing.propagation.Format;

@@ -10,7 +10,26 @@ import java.io.IOException;
  * @author Vikram Raman (vikram@wavefront.com)
  */
 public interface Reporter {
+
+  /**
+   * Report opentracing span to Wavefront
+   *
+   * @param span OpenTracing span
+   * @throws IOException
+   */
   void report(WavefrontSpan span) throws IOException;
 
+  /**
+   * Get total failure count reported by this reporter
+   *
+   * @return total failure count
+   */
+  int getFailureCount();
+
+  /**
+   * Close the reporter. WIll flush in-flight buffer before closing.
+   *
+   * @throws IOException
+   */
   void close() throws IOException;
 }

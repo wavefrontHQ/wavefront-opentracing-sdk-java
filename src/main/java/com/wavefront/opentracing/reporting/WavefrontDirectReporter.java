@@ -14,35 +14,21 @@ import java.net.UnknownHostException;
  */
 public class WavefrontDirectReporter extends BaseWavefrontReporter implements Reporter {
 
-  private static final int DEFAULT_FLUSH_INTERVAL = 1000;
-  private static final int MAX_QUEUE_SIZE = 10000;
-
-  private final WavefrontDirectIngestionClient directClient;
-
-  private WavefrontDirectReporter(WavefrontDirectIngestionClient directClient, String source)
-      throws IOException {
-    super(directClient, source);
-    this.directClient = directClient;
-    this.directClient.connect();
-  }
-
-  @Override
-  public void report(WavefrontSpan span) throws IOException {
-    sendSpan(span);
-  }
-
-  @Override
-  public void close() throws IOException {
-    directClient.close();
-  }
+  private final WavefrontDirectIngestionClient wavefrontDirectIngestionClient;
 
   public static final class Builder {
+    // Required parameters
+    private final String server;
+    private final String token;
 
-    private int flushInterval = DEFAULT_FLUSH_INTERVAL;
-    private int maxQueueSize = MAX_QUEUE_SIZE;
+    // Optional parameters
     private String source;
+    private int maxQueueSize = 50000;
+    private int flushIntervalSeconds = 1;
 
-    public Builder() {
+    public Builder(String server, String token) {
+      this.server = server;
+      this.token = token;
       this.source = getDefaultSource();
     }
 
@@ -71,8 +57,8 @@ public class WavefrontDirectReporter extends BaseWavefrontReporter implements Re
      * @param interval the flush interval for reporting spans to a Wavefront proxy
      * @return {@code this}
      */
-    public Builder withFlushInterval(int interval) {
-      this.flushInterval = interval;
+    public Builder flushIntervalSeconds(int interval) {
+      this.flushIntervalSeconds = interval;
       return this;
     }
 
@@ -82,24 +68,44 @@ public class WavefrontDirectReporter extends BaseWavefrontReporter implements Re
      * @param maxQueueSize the maximum queue size
      * @return {@code this}
      */
-    public Builder withMaxQueueSize(int maxQueueSize) {
+    public Builder maxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
       return this;
     }
 
     /**
-     * Builds a  {@link WavefrontProxyReporter} for sending spans to a Wavefront proxy.
+     * Builds a {@link WavefrontProxyReporter} for sending spans to a Wavefront proxy.
      *
-     * @param server The Wavefront server of the form "https://serverName.wavefront.com"
-     * @param token  The Wavefront API token with direct data ingestion permission
      * @return {@link WavefrontDirectReporter}
      * @throws IOException If an error occurs creating the reporter
      */
-    public WavefrontDirectReporter build(String server, String token) throws IOException {
-
-      //TODO: pass in flush interval and queue size to the direct ingestion client
-      WavefrontDirectIngestionClient client = new WavefrontDirectIngestionClient(server, token);
-      return new WavefrontDirectReporter(client, source);
+    public WavefrontDirectReporter build() throws IOException {
+      WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
+              new WavefrontDirectIngestionClient.Builder(this.server, this.token).
+                      maxQueueSize(this.maxQueueSize).
+                      flushIntervalSeconds(this.flushIntervalSeconds).build();
+      return new WavefrontDirectReporter(wavefrontDirectIngestionClient, this.source);
     }
+  }
+
+  private WavefrontDirectReporter(WavefrontDirectIngestionClient wavefrontDirectIngestionClient,
+                                  String source) throws IOException {
+    super(wavefrontDirectIngestionClient, source);
+    this.wavefrontDirectIngestionClient = wavefrontDirectIngestionClient;
+  }
+
+  @Override
+  public void report(WavefrontSpan span) throws IOException {
+    sendSpan(span);
+  }
+
+  @Override
+  public int getFailureCount() {
+    return wavefrontDirectIngestionClient.getFailureCount();
+  }
+
+  @Override
+  public void close() throws IOException {
+    wavefrontDirectIngestionClient.close();
   }
 }
