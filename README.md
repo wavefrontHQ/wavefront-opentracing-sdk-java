@@ -7,6 +7,7 @@ The builder pattern can be used to customize the reporter.
 
 ### Proxy reporter
 ```
+/* Report opentracing spans to Wavefront via Proxy Sender */
 Reporter proxyReporter = new WavefrontProxyReporter.
   Builder("proxyHostName", proxyTracingPort).
   withSource("wavefront-tracing-example").
@@ -25,6 +26,7 @@ proxyReporter.close();
 
 ### Direct reporter
 ```
+/* Report opentracing spans to Wavefront via Direct Ingestion Sender */
 Reporter directReporter = new WavefrontDirectReporter.
   Builder("clusterName.wavefront.com", "WAVEFRONT_API_TOKEN").
   withSource("wavefront-tracing-example").
@@ -42,7 +44,7 @@ int totalFailures = directReporter.getFailureCount();
 directReporter.close();  
 ```
 
-### Composite reporter
+### Composite reporter (use this to chain multiple reporters)
 ```
 Reporter consoleReporter = new ConsoleReporter("sourceName");
 Reporter compositeReporter = new CompositeReporter(directReporter, consoleReporter);
@@ -50,7 +52,5 @@ Reporter compositeReporter = new CompositeReporter(directReporter, consoleReport
 
 ### Initialize the tracer with a specific reporter
 ```
-Tracer tracer = new WavefrontTracer.Builder().
-  withReporter(directReporter).
-  build();
+Tracer tracer = new WavefrontTracer.Builder().withReporter(directReporter).build();
 ```
