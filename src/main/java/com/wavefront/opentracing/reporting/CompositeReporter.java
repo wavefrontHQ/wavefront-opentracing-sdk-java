@@ -30,6 +30,15 @@ public class CompositeReporter implements Reporter {
   }
 
   @Override
+  public int getFailureCount() {
+    int result = 0;
+    for (Reporter reporter : reporters) {
+      result += reporter.getFailureCount();
+    }
+    return result;
+  }
+
+  @Override
   public void close() throws IOException {
     for (Reporter reporter : reporters) {
       reporter.close();

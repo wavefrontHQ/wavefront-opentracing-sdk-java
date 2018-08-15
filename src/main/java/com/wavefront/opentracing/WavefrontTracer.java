@@ -6,12 +6,12 @@ import com.wavefront.opentracing.reporting.ConsoleReporter;
 import com.wavefront.opentracing.reporting.Reporter;
 import com.wavefront.sdk.common.Pair;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -30,7 +30,7 @@ import io.opentracing.util.ThreadLocalScopeManager;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
-public class WavefrontTracer implements Tracer {
+public class WavefrontTracer implements Tracer, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(WavefrontTracer.class.getName());
   private final ScopeManager scopeManager;
@@ -207,5 +207,10 @@ public class WavefrontTracer implements Tracer {
         return "wavefront-tracer";
       }
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    this.reporter.close();
   }
 }

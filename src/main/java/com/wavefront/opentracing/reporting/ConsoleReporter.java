@@ -45,7 +45,13 @@ public class ConsoleReporter implements Reporter {
   }
 
   @Override
+  public int getFailureCount() {
+    // no-op
+    return 0;
+  }
+
+  @Override
   public void close() {
-    //no-op
+    // no-op
   }
 }
