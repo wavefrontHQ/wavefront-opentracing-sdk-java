@@ -21,9 +21,11 @@ public class WavefrontProxyReporter extends BaseWavefrontReporter implements Rep
   private final WavefrontProxyClient wavefrontProxyClient;
 
   public static final class Builder {
-
+    // Required parameters
     private final String proxyHost;
     private final int tracingPort;
+
+    // Optional parameters
     private int flushIntervalSeconds = 5;
     private String source;
 
