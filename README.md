@@ -47,7 +47,7 @@ Reporter directReporter = new WavefrontDirectReporter.
 
 Tracer tracer = new WavefrontTracer.Builder().withReporter(directReporter).build();
 
-/* To get failures observed while reporting */
+// To get failures observed while reporting
 int totalFailures = directReporter.getFailureCount();
 ```
 
