@@ -32,7 +32,7 @@ import io.opentracing.util.ThreadLocalScopeManager;
  */
 public class WavefrontTracer implements Tracer, Closeable {
 
-  private static final Logger LOGGER = Logger.getLogger(WavefrontTracer.class.getName());
+  private static final Logger logger = Logger.getLogger(WavefrontTracer.class.getName());
   private final ScopeManager scopeManager;
   private final PropagatorRegistry registry;
   private final Reporter reporter;
@@ -85,7 +85,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     try {
       reporter.report(span);
     } catch (IOException ex) {
-      LOGGER.log(Level.WARNING, "Error reporting span", ex);
+      logger.log(Level.WARNING, "Error reporting span", ex);
     }
   }
 
