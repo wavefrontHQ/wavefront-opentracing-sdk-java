@@ -17,13 +17,13 @@ This Java library provides open tracing support for Wavefront.
 OpenTracing Tracer is a simple, thin interface for Span creation and propagation across arbitrary transports.
 
 #### How to instantiate a Wavefront tracer?
-```
+```java
 Tracer tracer = new WavefrontTracer.Builder().withReporter(reporter).build();
 ```
 
 #### Close the tracer
 Before exiting your application, don't forget to close the tracer which will flush all the buffered spans to Wavefront.
-```
+```java
 tracer.close();
 ```
 
@@ -36,7 +36,7 @@ Refer to this page (https://github.com/wavefrontHQ/wavefront-java-sdk/blob/maste
 to instantiate WavefrontProxyClient or WavefrontDirectIngestionClient.
 
 ### Option 1 - Proxy reporter using proxy WavefrontSender
-```
+```java
 /* Report opentracing spans to Wavefront via a Wavefront Proxy */
 Reporter proxyReporter = new WavefrontOpenTracingReporter.Builder().
   withSource("wavefront-tracing-example").
@@ -50,7 +50,7 @@ int totalFailures = proxyReporter.getFailureCount();
 ```
 
 ### Option 2 - Direct reporter using direct ingestion WavefrontSender
-```
+```java
 /* Report opentracing spans to Wavefront via Direct Ingestion */
 Reporter directReporter = new WavefrontOpenTracingReporter.Builder().
   withSource("wavefront-tracing-example").
@@ -64,7 +64,7 @@ int totalFailures = directReporter.getFailureCount();
 ```
 
 ### Composite reporter (chaining multiple reporters)
-```
+```java
 /* Creates a console reporter that reports span to stdout (useful for debugging) */
 Reporter consoleReporter = new ConsoleReporter("sourceName");
 
