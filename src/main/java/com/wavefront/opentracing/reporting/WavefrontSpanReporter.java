@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
-public class WavefrontOpenTracingReporter implements Reporter {
+public class WavefrontSpanReporter implements Reporter {
   private static final Logger logger =
-      Logger.getLogger(WavefrontOpenTracingReporter.class.getName());
+      Logger.getLogger(WavefrontSpanReporter.class.getName());
 
   private final WavefrontSender wavefrontSender;
   private final String source;
@@ -53,19 +53,19 @@ public class WavefrontOpenTracingReporter implements Reporter {
     }
 
     /**
-     * Builds a {@link WavefrontOpenTracingReporter} for sending opentracing spans to a
+     * Builds a {@link WavefrontSpanReporter} for sending opentracing spans to a
      * WavefrontSender that can send those spans either be a via proxy or direct ingestion.
      *
-     * @return {@link WavefrontOpenTracingReporter}
+     * @return {@link WavefrontSpanReporter}
      * @throws IOException If an error occurs creating the reporter
      */
-    public WavefrontOpenTracingReporter build(WavefrontSender wavefrontSender)
+    public WavefrontSpanReporter build(WavefrontSender wavefrontSender)
         throws IOException {
-      return new WavefrontOpenTracingReporter(wavefrontSender, this.source);
+      return new WavefrontSpanReporter(wavefrontSender, this.source);
     }
   }
 
-  private WavefrontOpenTracingReporter(WavefrontSender wavefrontSender, String source) {
+  private WavefrontSpanReporter(WavefrontSender wavefrontSender, String source) {
     this.wavefrontSender = wavefrontSender;
     this.source = source;
   }

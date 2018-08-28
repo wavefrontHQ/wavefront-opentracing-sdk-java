@@ -30,7 +30,7 @@ tracer.close();
 When you instantiate the tracer, the builder pattern can be used to customize the reporter as shown below.
 
 ### WavefrontSender
-Before we instantiate the Wavefront opentracing reporter, we need to instantiate a WavefrontSender 
+Before we instantiate the Wavefront opentracing span reporter, we need to instantiate a WavefrontSender 
 (i.e. either WavefrontProxyClient or WavefrontDirectIngestionClient)
 Refer to this page (https://github.com/wavefrontHQ/wavefront-java-sdk/blob/master/README.md)
 to instantiate WavefrontProxyClient or WavefrontDirectIngestionClient.
@@ -38,7 +38,7 @@ to instantiate WavefrontProxyClient or WavefrontDirectIngestionClient.
 ### Option 1 - Proxy reporter using proxy WavefrontSender
 ```java
 /* Report opentracing spans to Wavefront via a Wavefront Proxy */
-Reporter proxyReporter = new WavefrontOpenTracingReporter.Builder().
+Reporter proxyReporter = new WavefrontSpanReporter.Builder().
   withSource("wavefront-tracing-example").
   build(proxyWavefrontSender);
 
@@ -52,7 +52,7 @@ int totalFailures = proxyReporter.getFailureCount();
 ### Option 2 - Direct reporter using direct ingestion WavefrontSender
 ```java
 /* Report opentracing spans to Wavefront via Direct Ingestion */
-Reporter directReporter = new WavefrontOpenTracingReporter.Builder().
+Reporter directReporter = new WavefrontSpanReporter.Builder().
   withSource("wavefront-tracing-example").
   build(directWavefrontSender);
 
