@@ -1,4 +1,4 @@
-# wavefront-opentracing-java-sdk
+# wavefront-opentracing-java-sdk [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-java-sdk.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-java-sdk)
 
 This Java library provides open tracing support for Wavefront.
 
