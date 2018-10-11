@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.wavefront</groupId>
-    <artifactId>opentracing-java</artifactId>
-    <version>0.1.0</version>
+    <artifactId>wavefront-opentracing-sdk-java</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Wavefront Java Tracing</name>
-    <description>The Wavefront OpenTracing Libraries for Java</description>
-    <url>https://github.com/wavefrontHQ/wavefront-opentracing-java-sdk</url>
+    <name>Wavefront by VMware OpenTracing SDK for Java</name>
+    <description>Implements OpenTracing for collecting and sending tracing data to Wavefront from Java applications.</description>
+    <url>https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java</url>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
