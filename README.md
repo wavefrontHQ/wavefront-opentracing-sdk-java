@@ -7,9 +7,9 @@ This Java library provides open tracing support for Wavefront.
 ### Maven
 ```
 <dependency>
-    <groupId>com.wavefront</groupId>
-    <artifactId>opentracing-java</artifactId>
-    <version>$releaseVersion</version>
+  <groupId>com.wavefront</groupId>
+  <artifactId>wavefront-opentracing-sdk-java</artifactId>
+  <version>$releaseVersion</version>
 </dependency>
 ```
 
