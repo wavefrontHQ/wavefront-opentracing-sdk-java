@@ -32,7 +32,7 @@ When you instantiate the tracer, the builder pattern can be used to customize th
 ### WavefrontSender
 Before we instantiate the Wavefront opentracing span reporter, we need to instantiate a WavefrontSender 
 (i.e. either WavefrontProxyClient or WavefrontDirectIngestionClient)
-Refer to this page (https://github.com/wavefrontHQ/wavefront-java-sdk/blob/master/README.md)
+Refer to this page (https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/README.md#wavefrontsender)
 to instantiate WavefrontProxyClient or WavefrontDirectIngestionClient.
 
 ### Option 1 - Proxy reporter using proxy WavefrontSender
