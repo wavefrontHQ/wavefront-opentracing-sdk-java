@@ -112,7 +112,7 @@
         </dependency>
         <dependency>
             <groupId>com.wavefront</groupId>
-            <artifactId>java-sdk</artifactId>
+            <artifactId>wavefront-sdk-java</artifactId>
             <version>0.9.0</version>
         </dependency>
 
