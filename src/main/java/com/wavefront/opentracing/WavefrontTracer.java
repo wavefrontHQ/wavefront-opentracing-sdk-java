@@ -4,6 +4,7 @@ import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
 import com.wavefront.opentracing.reporting.Reporter;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.application.ApplicationTags;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -21,6 +22,12 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.ThreadLocalScopeManager;
+
+import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 
 /**
  * The Wavefront OpenTracing tracer for sending distributed traces to Wavefront.
@@ -157,6 +164,23 @@ public class WavefrontTracer implements Tracer, Closeable {
       }
       return this;
     }
+
+    /**
+     * Apply ApplicationTags as global span tags.
+     *
+     * @param applicationTags Metadata about your application.
+     * @return {@code this}
+     */
+    public Builder withApplicationTags(ApplicationTags applicationTags) {
+      withGlobalTag(APPLICATION_TAG_KEY, applicationTags.getApplication());
+      withGlobalTag(SERVICE_TAG_KEY, applicationTags.getService());
+      withGlobalTag(CLUSTER_TAG_KEY,
+          applicationTags.getCluster() == null ? NULL_TAG_VAL : applicationTags.getCluster());
+      withGlobalTag(SHARD_TAG_KEY,
+          applicationTags.getShard() == null ? NULL_TAG_VAL : applicationTags.getShard());
+      return this;
+    }
+
 
     /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
