@@ -2,14 +2,12 @@ package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
-import com.wavefront.opentracing.reporting.ConsoleReporter;
 import com.wavefront.opentracing.reporting.Reporter;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.application.ApplicationTags;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +22,12 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.ThreadLocalScopeManager;
+
+import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 
 /**
  * The Wavefront OpenTracing tracer for sending distributed traces to Wavefront.
@@ -106,8 +110,6 @@ public class WavefrontTracer implements Tracer, Closeable {
    * A builder for {@link WavefrontTracer} instances.
    */
   public static class Builder {
-    private String source;
-    private Reporter reporter;
     private final List<Pair<String, String>> tags;
 
     /**
@@ -115,17 +117,6 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public Builder() {
       this.tags = new ArrayList<>();
-    }
-
-    /**
-     * The source attributed to reported spans.
-     *
-     * @param source The source string
-     * @return {@code this}
-     */
-    public Builder withSource(String source) {
-      this.source = source;
-      return this;
     }
 
     /**
@@ -175,37 +166,29 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
-     * Set the reporter for this tracer.
+     * Apply ApplicationTags as global span tags.
      *
-     * @param reporter the reporter for this tracer
+     * @param applicationTags Metadata about your application.
      * @return {@code this}
      */
-    public Builder withReporter(Reporter reporter) {
-      this.reporter = reporter;
+    public Builder withApplicationTags(ApplicationTags applicationTags) {
+      withGlobalTag(APPLICATION_TAG_KEY, applicationTags.getApplication());
+      withGlobalTag(SERVICE_TAG_KEY, applicationTags.getService());
+      withGlobalTag(CLUSTER_TAG_KEY,
+          applicationTags.getCluster() == null ? NULL_TAG_VAL : applicationTags.getCluster());
+      withGlobalTag(SHARD_TAG_KEY,
+          applicationTags.getShard() == null ? NULL_TAG_VAL : applicationTags.getShard());
       return this;
     }
+
 
     /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
      *
      * @return a {@link WavefrontTracer}
      */
-    public WavefrontTracer build() {
-      if (source == null || source.isEmpty()) {
-        source = getDefaultSource();
-      }
-      if (reporter == null) {
-        reporter = new ConsoleReporter(source);
-      }
+    public WavefrontTracer build(Reporter reporter) {
       return new WavefrontTracer(reporter, tags);
-    }
-
-    private static String getDefaultSource() {
-      try {
-        return InetAddress.getLocalHost().getHostName();
-      } catch (UnknownHostException ex) {
-        return "wavefront-tracer";
-      }
     }
   }
 

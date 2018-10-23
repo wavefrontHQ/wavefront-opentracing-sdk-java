@@ -1,5 +1,7 @@
 package com.wavefront.opentracing;
 
+import com.wavefront.opentracing.reporting.ConsoleReporter;
+
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import io.opentracing.propagation.TextMap;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
 
+import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +23,8 @@ public class WavefrontTracerTest {
 
   @Test
   public void testInjectExtract() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().build();
+    WavefrontTracer tracer = new WavefrontTracer.Builder().
+        build(new ConsoleReporter(DEFAULT_SOURCE));
 
     Span span = tracer.buildSpan("testOp").start();
     assertNotNull(span);
@@ -33,7 +37,8 @@ public class WavefrontTracerTest {
     tracer.inject(span.context(), Format.Builtin.TEXT_MAP, textMapInjectAdapter);
 
     TextMap textMapExtractAdapter = new TextMapExtractAdapter(map);
-    WavefrontSpanContext ctx = (WavefrontSpanContext) tracer.extract(Format.Builtin.TEXT_MAP, textMapExtractAdapter);
+    WavefrontSpanContext ctx = (WavefrontSpanContext) tracer.extract(Format.Builtin.TEXT_MAP,
+        textMapExtractAdapter);
 
     assertEquals("testCustomer", ctx.getBaggageItem("customer"));
     assertEquals("mobile", ctx.getBaggageItem("requesttype"));
@@ -41,7 +46,8 @@ public class WavefrontTracerTest {
 
   @Test
   public void testActiveSpan() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().build();
+    WavefrontTracer tracer = new WavefrontTracer.Builder().
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     Scope scope = tracer.buildSpan("testOp").startActive(true);
     Span span = tracer.activeSpan();
     assertNotNull(span);
@@ -52,7 +58,7 @@ public class WavefrontTracerTest {
   public void testGlobalTags() {
     WavefrontTracer tracer = new WavefrontTracer.Builder().
         withGlobalTag("foo", "bar").
-        build();
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());
@@ -64,7 +70,7 @@ public class WavefrontTracerTest {
     tags.put("foo2", "bar2");
     tracer = new WavefrontTracer.Builder().
         withGlobalTags(tags).
-        build();
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     span = (WavefrontSpan) tracer.buildSpan("testOp").
         withTag("foo3", "bar3").
         start();
@@ -81,7 +87,7 @@ public class WavefrontTracerTest {
     WavefrontTracer tracer = new WavefrontTracer.Builder().
         withGlobalTag("key1", "value1").
         withGlobalTag("key1", "value2").
-        build();
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());

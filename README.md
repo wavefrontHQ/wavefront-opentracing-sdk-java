@@ -18,7 +18,7 @@ OpenTracing Tracer is a simple, thin interface for Span creation and propagation
 
 #### How to instantiate a Wavefront tracer?
 ```java
-Tracer tracer = new WavefrontTracer.Builder().withReporter(reporter).build();
+Tracer tracer = new WavefrontTracer.Builder().build(reporter);
 ```
 
 #### Close the tracer
@@ -47,7 +47,7 @@ Reporter proxyReporter = new WavefrontSpanReporter.Builder().
   build(proxyWavefrontSender);
 
 /* Construct Wavefront opentracing Tracer using proxy reporter */
-Tracer tracer = new WavefrontTracer.Builder().withReporter(proxyReporter).build();  
+Tracer tracer = new WavefrontTracer.Builder().build(proxyReporter);
 
 /*  To get failures observed while reporting */
 int totalFailures = proxyReporter.getFailureCount();
@@ -61,7 +61,7 @@ Reporter directReporter = new WavefrontSpanReporter.Builder().
   build(directWavefrontSender);
 
 /* Construct Wavefront opentracing Tracer using direct ingestion reporter */
-Tracer tracer = new WavefrontTracer.Builder().withReporter(directReporter).build();
+Tracer tracer = new WavefrontTracer.Builder().build(directReporter);
 
 /* To get failures observed while reporting */
 int totalFailures = directReporter.getFailureCount();
@@ -76,6 +76,26 @@ Reporter consoleReporter = new ConsoleReporter("sourceName");
 Reporter compositeReporter = new CompositeReporter(directReporter, consoleReporter);
 
 /* Construct Wavefront opentracing Tracer composed of console and direct reporter */
-Tracer tracer = new WavefrontTracer.Builder().withReporter(compositeReporter).build();
+Tracer tracer = new WavefrontTracer.Builder().build(compositeReporter);
+```
+
+### Global Span Tags
+You can add metadata to opentracing spans using tags. The WavefrontTracer builder supports different methods to add those tags.
+```java
+/* Construct WavefrontTracer.Builder instance */
+WavefrontTracer.Builder builder = new WavefrontTracer.Builder();
+
+/* Add individual tag key value */
+builder.withGlobalTag("env", "Staging");
+
+/* Add a map of tags */
+builder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
+
+/* Add a map of multivalued tags since Wavefront supports repeated tags */
+builder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{ 
+     put("location", Arrays.asList("SF", "NY", "LA")); }});
+
+/* Construct Wavefront opentracing Tracer */
+Tracer tracer = builder.build(reporter);
 ```
 

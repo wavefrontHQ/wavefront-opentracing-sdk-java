@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
+
 /**
  * The reporter which reports tracing spans to Wavefront via WavefrontSender.
  *
@@ -37,7 +39,7 @@ public class WavefrontSpanReporter implements Reporter {
       try {
         return InetAddress.getLocalHost().getHostName();
       } catch (UnknownHostException ex) {
-        return "wavefront-tracer-reporter";
+        return DEFAULT_SOURCE;
       }
     }
 
