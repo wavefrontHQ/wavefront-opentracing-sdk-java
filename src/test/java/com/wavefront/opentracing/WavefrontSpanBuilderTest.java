@@ -1,10 +1,13 @@
 package com.wavefront.opentracing;
 
+import com.wavefront.opentracing.reporting.ConsoleReporter;
+
 import org.junit.Test;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 
+import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,7 +17,8 @@ public class WavefrontSpanBuilderTest {
 
   @Test
   public void testIgnoreActiveSpan() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().build();
+    WavefrontTracer tracer = new WavefrontTracer.Builder().
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     Scope scope = tracer.buildSpan("testOp").startActive(true);
     Span activeSpan = scope.span();
 
@@ -32,7 +36,8 @@ public class WavefrontSpanBuilderTest {
 
   @Test
   public void testMultiValuedTags() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().build();
+    WavefrontTracer tracer = new WavefrontTracer.Builder().
+        build(new ConsoleReporter(DEFAULT_SOURCE));
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
         withTag("key1", "value1").
         withTag("key1", "value2").

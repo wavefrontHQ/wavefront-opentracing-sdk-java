@@ -2,14 +2,11 @@ package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
-import com.wavefront.opentracing.reporting.ConsoleReporter;
 import com.wavefront.opentracing.reporting.Reporter;
 import com.wavefront.sdk.common.Pair;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -106,8 +103,6 @@ public class WavefrontTracer implements Tracer, Closeable {
    * A builder for {@link WavefrontTracer} instances.
    */
   public static class Builder {
-    private String source;
-    private Reporter reporter;
     private final List<Pair<String, String>> tags;
 
     /**
@@ -115,17 +110,6 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public Builder() {
       this.tags = new ArrayList<>();
-    }
-
-    /**
-     * The source attributed to reported spans.
-     *
-     * @param source The source string
-     * @return {@code this}
-     */
-    public Builder withSource(String source) {
-      this.source = source;
-      return this;
     }
 
     /**
@@ -175,37 +159,12 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
-     * Set the reporter for this tracer.
-     *
-     * @param reporter the reporter for this tracer
-     * @return {@code this}
-     */
-    public Builder withReporter(Reporter reporter) {
-      this.reporter = reporter;
-      return this;
-    }
-
-    /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
      *
      * @return a {@link WavefrontTracer}
      */
-    public WavefrontTracer build() {
-      if (source == null || source.isEmpty()) {
-        source = getDefaultSource();
-      }
-      if (reporter == null) {
-        reporter = new ConsoleReporter(source);
-      }
+    public WavefrontTracer build(Reporter reporter) {
       return new WavefrontTracer(reporter, tags);
-    }
-
-    private static String getDefaultSource() {
-      try {
-        return InetAddress.getLocalHost().getHostName();
-      } catch (UnknownHostException ex) {
-        return "wavefront-tracer";
-      }
     }
   }
 

@@ -38,9 +38,9 @@ public class ConsoleReporter implements Reporter {
         map(WavefrontSpanContext::getSpanId).
         collect(Collectors.toList());
 
-    String spanLine = Utils.tracingSpanToLineData(span.getOperationName(), span.getStartTimeMicros(),
-            span.getDurationMicroseconds(), source, ctx.getTraceId(), ctx.getSpanId(), parents, follows,
-            span.getTagsAsList(), null, "unknown");
+    String spanLine = Utils.tracingSpanToLineData(span.getOperationName(),
+        span.getStartTimeMicros(), span.getDurationMicroseconds(), source, ctx.getTraceId(),
+        ctx.getSpanId(), parents, follows, span.getTagsAsList(), null, "unknown");
     System.out.println("Finished span: " + spanLine);
   }
 
