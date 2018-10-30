@@ -2,9 +2,8 @@
 
 This Java library provides open tracing support for Wavefront.
 
-## Usage
-
-### Maven
+## Maven
+If you are using Maven, add the following maven dependency to your pom.xml:
 ```
 <dependency>
   <groupId>com.wavefront</groupId>
@@ -13,69 +12,64 @@ This Java library provides open tracing support for Wavefront.
 </dependency>
 ```
 
-### Tracer
-OpenTracing Tracer is a simple, thin interface for Span creation and propagation across arbitrary transports.
+## Tracer
+OpenTracing Tracer is an interface for Span creation and propagation across arbitrary transports.
 
-#### How to instantiate a Wavefront tracer?
+### Create a WavefrontTracer
+To create a `WavefrontTracer`, create a `Reporter` instance (see section below) and pass it to the builder:
+
 ```java
+Reporter reporter = buildReporter(); // see below
 Tracer tracer = new WavefrontTracer.Builder().build(reporter);
 ```
 
-#### Close the tracer
-Before exiting your application, don't forget to close the tracer which will flush all the buffered spans to Wavefront.
+### Close the tracer
+Always close the tracer before exiting your application to flush all buffered spans to Wavefront.
 ```java
 tracer.close();
 ```
 
-When you instantiate the tracer, the builder pattern can be used to customize the reporter as shown below.
+## Reporter
+Create a WavefrontSpanReporter to send data to Wavefront or a CompositeReporter to send data to Wavefront and print to console.
 
-### WavefrontSender
-Before we instantiate the Wavefront opentracing span reporter, we need to instantiate a WavefrontSender 
-(i.e. either WavefrontProxyClient or WavefrontDirectIngestionClient)
-Refer to this page (https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/README.md#wavefrontsender)
-to instantiate WavefrontProxyClient or WavefrontDirectIngestionClient.
-<br />
-<br />
-**Note:** If you are using more than one Wavefront SDK (i.e. wavefront-opentracing-sdk-java, wavefront-dropwizard-metrics-sdk-java, wavefront-jersey-sdk-java, wavefront-grpc-sdk-java etc.) that requires you to instantiate WavefrontSender, then you should instantiate the WavefrontSender only once and share that sender instance across multiple SDKs inside the same JVM.
-If the SDKs will be installed on different JVMs, then you would need to instantiate one WavefrontSender per JVM.
+### WavefrontSpanReporter
+The `WavefrontSpanReporter` can send data to Wavefront using either the [proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-### Option 1 - Proxy reporter using proxy WavefrontSender
+To create a `WavefrontSpanReporter`, you first create a `WavefrontSender`. There are two implementations of the Wavefront sender:
+* WavefrontProxyClient
+* WavefrontDirectIngestionClient
+
+See the [Wavefront sender documentation](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/README.md#wavefrontsender) for details on instantiating a proxy or direct ingestion client.
+
+Once you have a Wavefront sender, create the WavefrontReporter as follows:
+
 ```java
-/* Report opentracing spans to Wavefront via a Wavefront Proxy */
-Reporter proxyReporter = new WavefrontSpanReporter.Builder().
-  withSource("wavefront-tracing-example").
-  build(proxyWavefrontSender);
+// Create WavefrontProxyClient or WavefrontDirectIngestionClient
+WavefrontSender sender = buildWavefrontSender();
 
-/* Construct Wavefront opentracing Tracer using proxy reporter */
-Tracer tracer = new WavefrontTracer.Builder().build(proxyReporter);
+Reporter wavefrontReporter = new WavefrontSpanReporter.Builder().
+  withSource("wavefront-tracing-example"). // change the source to a relevant name
+  build(sender);
+
+/* Construct Wavefront opentracing Tracer using wavefront reporter */
+Tracer tracer = new WavefrontTracer.Builder().build(wavefrontReporter);
 
 /*  To get failures observed while reporting */
-int totalFailures = proxyReporter.getFailureCount();
+int totalFailures = wavefrontReporter.getFailureCount();
 ```
+There is no need to start the Reporter. Once the tracer has been initialized with the Reporter, completed spans will be reported to Wavefront.
 
-### Option 2 - Direct reporter using direct ingestion WavefrontSender
-```java
-/* Report opentracing spans to Wavefront via Direct Ingestion */
-Reporter directReporter = new WavefrontSpanReporter.Builder().
-  withSource("wavefront-tracing-example").
-  build(directWavefrontSender);
+**Note:** If you are using more than one Wavefront SDK (i.e. wavefront-opentracing-sdk-java, wavefront-dropwizard-metrics-sdk-java etc.) that requires you to instantiate WavefrontSender, then you should instantiate the WavefrontSender only once and share that sender instance across multiple SDKs inside the same JVM. If the SDKs will be installed on different JVMs, then you would need to instantiate one WavefrontSender per JVM.
 
-/* Construct Wavefront opentracing Tracer using direct ingestion reporter */
-Tracer tracer = new WavefrontTracer.Builder().build(directReporter);
-
-/* To get failures observed while reporting */
-int totalFailures = directReporter.getFailureCount();
-```
-
-### Composite reporter (chaining multiple reporters)
+### CompositeReporter (chaining multiple reporters)
 ```java
 /* Creates a console reporter that reports span to stdout (useful for debugging) */
 Reporter consoleReporter = new ConsoleReporter("sourceName");
 
-/* Instantiate a composite reporter composed of console and direct reporter */
-Reporter compositeReporter = new CompositeReporter(directReporter, consoleReporter);
+/* Instantiate a composite reporter composed of console and Wavefront reporter */
+Reporter compositeReporter = new CompositeReporter(wavefrontReporter, consoleReporter);
 
-/* Construct Wavefront opentracing Tracer composed of console and direct reporter */
+/* Construct Wavefront opentracing Tracer composed of composite reporter */
 Tracer tracer = new WavefrontTracer.Builder().build(compositeReporter);
 ```
 
@@ -92,10 +86,9 @@ builder.withGlobalTag("env", "Staging");
 builder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
 
 /* Add a map of multivalued tags since Wavefront supports repeated tags */
-builder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{ 
+builder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{
      put("location", Arrays.asList("SF", "NY", "LA")); }});
 
 /* Construct Wavefront opentracing Tracer */
 Tracer tracer = builder.build(reporter);
 ```
-
