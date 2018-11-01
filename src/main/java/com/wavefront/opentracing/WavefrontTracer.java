@@ -178,9 +178,9 @@ public class WavefrontTracer implements Tracer, Closeable {
           applicationTags.getCluster() == null ? NULL_TAG_VAL : applicationTags.getCluster());
       withGlobalTag(SHARD_TAG_KEY,
           applicationTags.getShard() == null ? NULL_TAG_VAL : applicationTags.getShard());
+      withGlobalTags(applicationTags.getCustomTags());
       return this;
     }
-
 
     /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
