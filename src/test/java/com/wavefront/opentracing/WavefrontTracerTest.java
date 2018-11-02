@@ -1,6 +1,7 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.common.application.ApplicationTags;
 
 import org.junit.Test;
 
@@ -21,10 +22,14 @@ import static org.junit.Assert.assertTrue;
 
 public class WavefrontTracerTest {
 
+  private ApplicationTags buildApplicationTags() {
+    return new ApplicationTags.Builder("myApplication", "myService").build();
+  }
+
   @Test
   public void testInjectExtract() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).build();
 
     Span span = tracer.buildSpan("testOp").start();
     assertNotNull(span);
@@ -46,8 +51,8 @@ public class WavefrontTracerTest {
 
   @Test
   public void testActiveSpan() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new ConsoleReporter(DEFAULT_SOURCE), buildApplicationTags()).build();
     Scope scope = tracer.buildSpan("testOp").startActive(true);
     Span span = tracer.activeSpan();
     assertNotNull(span);
@@ -56,27 +61,27 @@ public class WavefrontTracerTest {
 
   @Test
   public void testGlobalTags() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        withGlobalTag("foo", "bar").
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).withGlobalTag("foo", "bar").build();
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());
-    assertEquals(1, span.getTagsAsMap().size());
+    // Note: Will emit ApplicationTags along with regular tags.
+    assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("foo").contains("bar"));
 
     Map<String, String> tags = new HashMap<>();
     tags.put("foo1", "bar1");
     tags.put("foo2", "bar2");
-    tracer = new WavefrontTracer.Builder().
-        withGlobalTags(tags).
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).withGlobalTags(tags).build();
     span = (WavefrontSpan) tracer.buildSpan("testOp").
         withTag("foo3", "bar3").
         start();
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());
-    assertEquals(3, span.getTagsAsMap().size());
+    // Note: Will emit ApplicationTags along with regular tags.
+    assertEquals(7, span.getTagsAsMap().size());
     assertTrue("bar1", span.getTagsAsMap().get("foo1").contains("bar1"));
     assertTrue(span.getTagsAsMap().get("foo2").contains("bar2"));
     assertTrue(span.getTagsAsMap().get("foo3").contains("bar3"));
@@ -84,14 +89,14 @@ public class WavefrontTracerTest {
 
   @Test
   public void testGlobalMultiValuedTags() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        withGlobalTag("key1", "value1").
-        withGlobalTag("key1", "value2").
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new ConsoleReporter(DEFAULT_SOURCE), buildApplicationTags()).
+        withGlobalTag("key1", "value1").withGlobalTag("key1", "value2").build();
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());
-    assertEquals(1, span.getTagsAsMap().size());
+    // Note: Will emit ApplicationTags along with regular tags.
+    assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
   }

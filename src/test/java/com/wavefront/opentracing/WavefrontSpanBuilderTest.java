@@ -1,6 +1,7 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.common.application.ApplicationTags;
 
 import org.junit.Test;
 
@@ -15,10 +16,14 @@ import static org.junit.Assert.assertTrue;
 
 public class WavefrontSpanBuilderTest {
 
+  private ApplicationTags buildApplicationTags() {
+    return new ApplicationTags.Builder("myApplication", "myService").build();
+  }
+
   @Test
   public void testIgnoreActiveSpan() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).build();
     Scope scope = tracer.buildSpan("testOp").startActive(true);
     Span activeSpan = scope.span();
 
@@ -36,8 +41,8 @@ public class WavefrontSpanBuilderTest {
 
   @Test
   public void testMultiValuedTags() {
-    WavefrontTracer tracer = new WavefrontTracer.Builder().
-        build(new ConsoleReporter(DEFAULT_SOURCE));
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).build();
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
         withTag("key1", "value1").
         withTag("key1", "value2").
@@ -45,7 +50,8 @@ public class WavefrontSpanBuilderTest {
 
     assertNotNull(span);
     assertNotNull(span.getTagsAsMap());
-    assertEquals(1, span.getTagsAsMap().size());
+    // Note: Will emit ApplicationTags along with regular tags.
+    assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
   }
