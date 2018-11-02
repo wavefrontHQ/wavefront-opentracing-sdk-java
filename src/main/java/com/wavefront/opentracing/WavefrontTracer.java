@@ -111,11 +111,15 @@ public class WavefrontTracer implements Tracer, Closeable {
    */
   public static class Builder {
     private final List<Pair<String, String>> tags;
+    private final Reporter reporter;
+    private final ApplicationTags applicationTags;
 
     /**
      * Constructor.
      */
-    public Builder() {
+    public Builder(Reporter reporter, ApplicationTags applicationTags) {
+      this.reporter = reporter;
+      this.applicationTags = applicationTags;
       this.tags = new ArrayList<>();
     }
 
@@ -169,9 +173,8 @@ public class WavefrontTracer implements Tracer, Closeable {
      * Apply ApplicationTags as global span tags.
      *
      * @param applicationTags Metadata about your application.
-     * @return {@code this}
      */
-    public Builder withApplicationTags(ApplicationTags applicationTags) {
+    private void withApplicationTags(ApplicationTags applicationTags) {
       withGlobalTag(APPLICATION_TAG_KEY, applicationTags.getApplication());
       withGlobalTag(SERVICE_TAG_KEY, applicationTags.getService());
       withGlobalTag(CLUSTER_TAG_KEY,
@@ -179,7 +182,6 @@ public class WavefrontTracer implements Tracer, Closeable {
       withGlobalTag(SHARD_TAG_KEY,
           applicationTags.getShard() == null ? NULL_TAG_VAL : applicationTags.getShard());
       withGlobalTags(applicationTags.getCustomTags());
-      return this;
     }
 
     /**
@@ -187,7 +189,8 @@ public class WavefrontTracer implements Tracer, Closeable {
      *
      * @return a {@link WavefrontTracer}
      */
-    public WavefrontTracer build(Reporter reporter) {
+    public WavefrontTracer build() {
+      withApplicationTags(applicationTags);
       return new WavefrontTracer(reporter, tags);
     }
   }
