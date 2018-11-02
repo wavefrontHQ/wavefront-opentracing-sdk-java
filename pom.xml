@@ -27,9 +27,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:wavefronthq/wavefront-tracing-java.git</connection>
-        <developerConnection>scm:git:git@github.com:wavefronthq/wavefront-tracing-java.git</developerConnection>
-        <url>git@github.com:wavefronthq/wavefront-tracing-java.git</url>
+        <connection>scm:git:git@github.com:wavefronthq/wavefront-opentracing-sdk-java.git</connection>
+        <developerConnection>scm:git:git@github.com:wavefronthq/wavefront-opentracing-sdk-java.git</developerConnection>
+        <url>git@github.com:wavefronthq/wavefront-opentracing-sdk-java.git</url>
       <tag>HEAD</tag>
   </scm>
 
