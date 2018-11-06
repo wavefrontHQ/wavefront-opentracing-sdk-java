@@ -1,4 +1,4 @@
-# wavefront-opentracing-sdk-java [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java)
+# wavefront-opentracing-sdk-java [![build status][ci-img]][ci] [![Released Version][maven-img]][maven]
 
 The Wavefront by VMware OpenTracing SDK for Java is a library that provides open tracing support for Wavefront.
 
@@ -11,6 +11,7 @@ If you are using Maven, add the following maven dependency to your pom.xml:
   <version>$releaseVersion</version>
 </dependency>
 ```
+Replace `$releaseVersion` with the latest version available on [maven](http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java).
 
 ## Set Up a Tracer
 [Tracer](https://github.com/opentracing/specification/blob/master/specification.md#tracer) is an OpenTracing [interface](https://github.com/opentracing/opentracing-java#initialization) for creating spans and propagating them across arbitrary transports.
@@ -130,3 +131,8 @@ TextMap carrier = new TextMapExtractAdapter(new HashMap<>());
 SpanContext ctx = tracer.extract(Format.Builtin.HTTP_HEADERS, carrier);
 Span receivingSpan = tracer.buildSpan("httpRequestOperationName").asChildOf(ctx).startActive(true);
 ```
+
+[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master
+[ci]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java
+[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=2592000
+[maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
