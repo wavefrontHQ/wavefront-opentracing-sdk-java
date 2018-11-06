@@ -114,7 +114,7 @@ tracer.close();
 ```
 
 ## Cross Process Context Propagation
-The `Tracer` provides `inject` and `extract` methods that can be used to propagate span contexts across process boundaries.
+The `Tracer` provides `inject` and `extract` methods that can be used to propagate span contexts across process boundaries. This is useful to propagate childOf or followsFrom relationship between spans across process or host boundaries.
 
 Inject a span context (of the current span) when making an external call such as a HTTP invocation:
 ```java
