@@ -8,7 +8,7 @@
     <packaging>jar</packaging>
 
     <name>Wavefront by VMware OpenTracing SDK for Java</name>
-    <description>Implements OpenTracing for collecting and sending tracing data to Wavefront from Java applications.</description>
+    <description>Implements OpenTracing API for collecting and sending tracing data to Wavefront from Java applications.</description>
     <url>https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java</url>
     <licenses>
         <license>
