@@ -59,10 +59,8 @@ public class WavefrontSpanReporter implements Reporter {
      * WavefrontSender that can send those spans either be a via proxy or direct ingestion.
      *
      * @return {@link WavefrontSpanReporter}
-     * @throws IOException If an error occurs creating the reporter
      */
-    public WavefrontSpanReporter build(WavefrontSender wavefrontSender)
-        throws IOException {
+    public WavefrontSpanReporter build(WavefrontSender wavefrontSender) {
       return new WavefrontSpanReporter(wavefrontSender, this.source);
     }
   }
