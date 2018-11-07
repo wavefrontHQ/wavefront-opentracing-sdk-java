@@ -82,9 +82,9 @@ To create a `WavefrontTracer`, you pass the `ApplicationTags` and `Reporter` ins
 ```java
 ApplicationTags appTags = buildTags(); // pseudocode; see above
 Reporter wfSpanReporter = buildReporter();  // pseudocode; see above
-WavefrontTracer.Builder builder = new WavefrontTracer.Builder(wfSpanReporter, appTags);
+WavefrontTracer.Builder wfTracerBuilder = new WavefrontTracer.Builder(wfSpanReporter, appTags);
 // Optionally add multi-valued span tags before building
-Tracer tracer = builder.build();
+Tracer tracer = wfTracerBuilder.build();
 ```
 
 #### Multi-valued Span Tags (Optional)
@@ -92,20 +92,20 @@ You can optionally add metadata to OpenTracing spans in the form of multi-valued
 
 ```java
 // Construct WavefrontTracer.Builder instance
-WavefrontTracer.Builder builder = new WavefrontTracer.Builder(...);
+WavefrontTracer.Builder wfTracerBuilder = new WavefrontTracer.Builder(...);
 
 // Add individual tag key value
-builder.withGlobalTag("env", "Staging");
+wfTracerBuilder.withGlobalTag("env", "Staging");
 
 // Add a map of tags
-builder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
+wfTracerBuilder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
 
 // Add a map of multivalued tags since Wavefront supports repeated tags
-builder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{
+wfTracerBuilder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{
      put("location", Arrays.asList("SF", "NY", "LA")); }});
 
 // Construct Wavefront opentracing Tracer
-Tracer tracer = builder.build();
+Tracer tracer = wfTracerBuilder.build();
 ```
 
 #### Close the Tracer
