@@ -131,24 +131,32 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
     if (globalTags != null && !globalTags.isEmpty()) {
       tags.addAll(globalTags);
     }
-    WavefrontSpanContext context = createSpanContext();
-    return new WavefrontSpan(tracer, operationName, context, startTimeMicros,
-        startTimeNanos, parents, follows, tags);
+    WavefrontSpanContext ctx = createSpanContext();
+    if (!ctx.isSampled()) {
+      // this indicates a root span and that no decision has been inherited from a parent span.
+      // perform head based sampling as no sampling decision has been obtained for this span yet.
+      boolean decision = tracer.sample(operationName, ctx.getTraceId().getLeastSignificantBits(), 0);
+      ctx = ctx.withSamplingDecision(decision);
+    }
+    return new WavefrontSpan(tracer, operationName, ctx, startTimeMicros, startTimeNanos, parents,
+        follows, tags);
   }
 
   private WavefrontSpanContext createSpanContext() {
-    UUID traceId = traceAncestry();
     UUID spanId = UUID.randomUUID();
-    return new WavefrontSpanContext(traceId, spanId);
+    WavefrontSpanContext traceCtx = traceAncestry();
+    UUID traceId = traceCtx == null ? UUID.randomUUID() : traceCtx.getTraceId();
+    Boolean sampling = traceCtx == null ? null : traceCtx.getSamplingDecision();
+    return new WavefrontSpanContext(traceId, spanId, null, sampling);
   }
 
-  private UUID traceAncestry() {
+  private WavefrontSpanContext traceAncestry() {
     if (parents != null && !parents.isEmpty()) {
       // prefer child_of relationship for assigning traceId
-      return parents.get(0).getSpanContext().getTraceId();
+      return parents.get(0).getSpanContext();
     }
     if (follows != null && !follows.isEmpty()) {
-      return follows.get(0).getSpanContext().getTraceId();
+      return follows.get(0).getSpanContext();
     }
 
     // use active span as parent if ignoreActiveSpan is false
@@ -158,7 +166,6 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
     }
 
     // root span if parentSpan is null
-    return parentSpan == null ? UUID.randomUUID() :
-        ((WavefrontSpanContext) parentSpan.context()).getTraceId();
+    return parentSpan == null ? null : ((WavefrontSpanContext) parentSpan.context());
   }
 }

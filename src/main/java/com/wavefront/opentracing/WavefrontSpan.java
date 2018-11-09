@@ -140,7 +140,18 @@ public class WavefrontSpan implements Span {
       this.durationMicroseconds = durationMicros;
       finished = true;
     }
-    tracer.reportSpan(this);
+
+    // perform another sampling for duration based samplers
+    if (!spanContext.isSampled() || !spanContext.getSamplingDecision()) {
+      boolean decision = tracer.sample(operationName,
+          spanContext.getTraceId().getLeastSignificantBits(), durationMicros/1000);
+      spanContext = decision ? spanContext.withSamplingDecision(decision) : spanContext;
+    }
+
+    // only report spans if the sampling decision allows it
+    if (spanContext.isSampled() && spanContext.getSamplingDecision()) {
+      tracer.reportSpan(this);
+    }
   }
 
   public synchronized String getOperationName() {

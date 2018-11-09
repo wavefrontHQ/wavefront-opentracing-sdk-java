@@ -1,6 +1,7 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 import com.wavefront.sdk.common.application.ApplicationTags;
 
 import org.junit.Test;
@@ -17,6 +18,7 @@ import io.opentracing.propagation.TextMapInjectAdapter;
 
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +31,9 @@ public class WavefrontTracerTest {
   @Test
   public void testInjectExtract() {
     WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
-        buildApplicationTags()).build();
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(true)).
+        build();
 
     Span span = tracer.buildSpan("testOp").start();
     assertNotNull(span);
@@ -47,6 +51,23 @@ public class WavefrontTracerTest {
 
     assertEquals("testCustomer", ctx.getBaggageItem("customer"));
     assertEquals("mobile", ctx.getBaggageItem("requesttype"));
+    assertTrue(ctx.isSampled());
+    assertTrue(ctx.getSamplingDecision());
+  }
+
+  @Test
+  public void testSampling() {
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(true)).
+        build();
+    assertTrue(tracer.sample("testOp", 1L, 0));
+
+    tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(false)).
+        build();
+    assertFalse(tracer.sample("testOp", 1L, 0));
   }
 
   @Test

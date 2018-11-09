@@ -1,15 +1,19 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 import com.wavefront.sdk.common.application.ApplicationTags;
 
 import org.junit.Test;
+
+import java.util.UUID;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -54,5 +58,90 @@ public class WavefrontSpanBuilderTest {
     assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
+  }
+
+  @Test
+  public void testRootSampling() {
+    // Create tracer with constant sampler set to false
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(false)).
+        build();
+
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    assertNotNull(span);
+    assertNotNull(span.context());
+    assertEquals(0, span.getParents().size());
+    assertEquals(0, span.getFollows().size());
+    assertTrue(span.context().isSampled());
+    assertNotNull(span.context().getSamplingDecision());
+    assertFalse(span.context().getSamplingDecision());
+
+    // Create tracer with constant sampler set to true
+    tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(true)).
+        build();
+
+    span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    assertNotNull(span);
+    assertNotNull(span.context());
+    assertEquals(0, span.getParents().size());
+    assertEquals(0, span.getFollows().size());
+    assertTrue(span.context().isSampled());
+    assertNotNull(span.context().getSamplingDecision());
+    assertTrue(span.context().getSamplingDecision());
+  }
+
+  @Test
+  public void testPositiveChildSampling() {
+    // Create tracer with constant sampler set to false
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(false)).
+        build();
+
+    // Create parentCtx with sampled set to true
+    WavefrontSpanContext parentCtx = new WavefrontSpanContext(UUID.randomUUID(), UUID.randomUUID(),
+        null, Boolean.TRUE);
+
+    // Verify span created asChildOf parentCtx inherits parent sampling decision
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
+        asChildOf(parentCtx).
+        start();
+
+    assertFalse(tracer.sample(span.getOperationName(), span.context().getTraceId()
+        .getLeastSignificantBits(), 0));
+    assertNotNull(span);
+    assertEquals(parentCtx.getTraceId().toString(), span.context().getTraceId().toString());
+    assertTrue(span.context().isSampled());
+    assertNotNull(span.context().getSamplingDecision());
+    assertTrue(span.context().getSamplingDecision());
+  }
+
+  @Test
+  public void testNegativeChildSampling() {
+    // Create tracer with constant sampler set to true
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(true)).
+        build();
+
+    // Create parentCtx with sampled set to false
+    WavefrontSpanContext parentCtx = new WavefrontSpanContext(UUID.randomUUID(), UUID.randomUUID(),
+        null, Boolean.FALSE);
+
+    // Verify span created asChildOf parentCtx inherits parent sampling decision
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
+        asChildOf(parentCtx).
+        start();
+
+    assertTrue(tracer.sample(span.getOperationName(), span.context().getTraceId()
+        .getLeastSignificantBits(), 0));
+    assertNotNull(span);
+    assertEquals(parentCtx.getTraceId().toString(), span.context().getTraceId().toString());
+    assertTrue(span.context().isSampled());
+    assertNotNull(span.context().getSamplingDecision());
+    assertFalse(span.context().getSamplingDecision());
   }
 }
