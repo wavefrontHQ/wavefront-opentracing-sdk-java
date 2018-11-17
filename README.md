@@ -26,15 +26,15 @@ Below sample code explains how to create a Tracer. The exact steps in the sample
 
 ```java
 Tracer createWavefrontTracer(String application, String service) throws IOException {
-  // Step 1.
+  // Step 1. Set Up Application Tags
   ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
   // Step 2. Assuming you are sending the tracing spans from your application to Wavefront via proxy.
   WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
         metricsPort(2878).tracingPort(30000).build();
-  // Step 3.
+  // Step 3. Create WavefrontSpanReporter
   Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
         withSource(<source>).build(wavefrontSender);
-  // Step 4.
+  // Step 4. Create WavefrontTracer
   return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
 }
 ```
