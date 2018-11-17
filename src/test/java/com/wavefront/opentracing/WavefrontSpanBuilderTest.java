@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.junit.Assert.assertEquals;
@@ -58,6 +59,35 @@ public class WavefrontSpanBuilderTest {
     assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
+  }
+
+  @Test
+  public void testForcedSampling() {
+    // Create tracer with constant sampler set to false
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).
+        withSampler(new ConstantSampler(false)).
+        build();
+
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    assertNotNull(span);
+    assertNotNull(span.context());
+    assertNotNull(span.context().getSamplingDecision());
+    assertFalse(span.context().getSamplingDecision());
+
+    Tags.SAMPLING_PRIORITY.set(span, 1);
+    assertNotNull(span.context().getSamplingDecision());
+    assertTrue(span.context().getSamplingDecision());
+
+    span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    assertNotNull(span);
+    assertNotNull(span.context());
+    assertNotNull(span.context().getSamplingDecision());
+    assertFalse(span.context().getSamplingDecision());
+
+    Tags.ERROR.set(span, Boolean.TRUE);
+    assertNotNull(span.context().getSamplingDecision());
+    assertTrue(span.context().getSamplingDecision());
   }
 
   @Test
