@@ -22,6 +22,23 @@ This SDK provides a `WavefrontTracer` for creating spans and sending them to Wav
 3. Create a `WavefrontSpanReporter` for reporting trace data to Wavefront.
 4. Create the `WavefrontTracer` instance.
 
+Below sample code explains how to create a Tracer. The exact steps in the sample code are explained in detail below.
+
+```java
+Tracer createWavefrontTracer(String application, String service) throws IOException {
+  // Step 1.
+  ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
+  // Step 2. Assuming you are sending the tracing spans from your application to Wavefront via proxy.
+  WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
+        metricsPort(2878).tracingPort(30000).build();
+  // Step 3.
+  Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
+        withSource(<source>).build(wavefrontSender);
+  // Step 4.
+  return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
+}
+```
+
 For the details of each step, see the sections below.
 
 ### 1. Set Up Application Tags
@@ -33,11 +50,11 @@ See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk
 
 ### 2. Set Up a WavefrontSender
 
-A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data to Wavefront using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
+A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. 
 
-* See [Set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/README.md#set-up-a-wavefrontsender) for details on instantiating a proxy or direct ingestion client.
+* If you have already set up a `WavefrontSender` for another SDK that will run in the same JVM, use that one.  (For details about sharing a `WavefrontSender` instance, see [Sharing a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md).)
 
-**Note:** If you are using multiple Wavefront Java SDKs, see [Sharing a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md) for information about sharing a single `WavefrontSender` instance across SDKs.
+* Otherwise, follow the steps in [Set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/README.md#set-up-a-wavefrontsender) to send data using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
 
 ### 3. Reporter
@@ -82,9 +99,9 @@ To create a `WavefrontTracer`, you pass the `ApplicationTags` and `Reporter` ins
 ```java
 ApplicationTags appTags = buildTags(); // pseudocode; see above
 Reporter wfSpanReporter = buildReporter();  // pseudocode; see above
-WavefrontTracer.Builder builder = new WavefrontTracer.Builder(wfSpanReporter, appTags);
+WavefrontTracer.Builder wfTracerBuilder = new WavefrontTracer.Builder(wfSpanReporter, appTags);
 // Optionally add multi-valued span tags before building
-Tracer tracer = builder.build();
+Tracer tracer = wfTracerBuilder.build();
 ```
 
 #### Multi-valued Span Tags (Optional)
@@ -92,20 +109,20 @@ You can optionally add metadata to OpenTracing spans in the form of multi-valued
 
 ```java
 // Construct WavefrontTracer.Builder instance
-WavefrontTracer.Builder builder = new WavefrontTracer.Builder(...);
+WavefrontTracer.Builder wfTracerBuilder = new WavefrontTracer.Builder(...);
 
 // Add individual tag key value
-builder.withGlobalTag("env", "Staging");
+wfTracerBuilder.withGlobalTag("env", "Staging");
 
 // Add a map of tags
-builder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
+wfTracerBuilder.withGlobalTags(new HashMap<String, String>() {{ put("severity", "sev-1"); }});
 
 // Add a map of multivalued tags since Wavefront supports repeated tags
-builder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{
+wfTracerBuilder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>>() {{
      put("location", Arrays.asList("SF", "NY", "LA")); }});
 
 // Construct Wavefront opentracing Tracer
-Tracer tracer = builder.build();
+Tracer tracer = wfTracerBuilder.build();
 ```
 
 #### Close the Tracer
@@ -115,24 +132,10 @@ tracer.close();
 ```
 
 ## Cross Process Context Propagation
-The `Tracer` provides `inject` and `extract` methods that can be used to propagate span contexts across process boundaries. This is useful to propagate childOf or followsFrom relationship between spans across process or host boundaries.
-
-Inject a span context (of the current span) when making an external call such as a HTTP invocation:
-```java
-TextMap carrier = new TextMapInjectAdapter(new HashMap<>());
-tracer.inject(currentSpan.context(), Format.Builtin.HTTP_HEADERS, carrier);
-
-// loop over the injected text map and set its contents on the HTTP request header...
-```
-
-Extract the propagated span context on receiving a HTTP request:
-```java
-TextMap carrier = new TextMapExtractAdapter(new HashMap<>());
-SpanContext ctx = tracer.extract(Format.Builtin.HTTP_HEADERS, carrier);
-Span receivingSpan = tracer.buildSpan("httpRequestOperationName").asChildOf(ctx).startActive(true);
-```
+See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
 
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master
 [ci]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java
 [maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=2592000
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
+
