@@ -22,6 +22,23 @@ This SDK provides a `WavefrontTracer` for creating spans and sending them to Wav
 3. Create a `WavefrontSpanReporter` for reporting trace data to Wavefront.
 4. Create the `WavefrontTracer` instance.
 
+Below sample code explains how to create a Tracer. The exact steps in the sample code are explained in detail below.
+
+```java
+Tracer createWavefrontTracer(String application, String service) throws IOException {
+  // Step 1. Set Up Application Tags
+  ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
+  // Step 2. Assuming you are sending the tracing spans from your application to Wavefront via proxy.
+  WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
+        metricsPort(2878).tracingPort(30000).build();
+  // Step 3. Create WavefrontSpanReporter
+  Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
+        withSource(<source>).build(wavefrontSender);
+  // Step 4. Create WavefrontTracer
+  return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
+}
+```
+
 For the details of each step, see the sections below.
 
 ### 1. Set Up Application Tags
@@ -115,24 +132,10 @@ tracer.close();
 ```
 
 ## Cross Process Context Propagation
-The `Tracer` provides `inject` and `extract` methods that can be used to propagate span contexts across process boundaries. This is useful to propagate childOf or followsFrom relationship between spans across process or host boundaries.
-
-Inject a span context (of the current span) when making an external call such as a HTTP invocation:
-```java
-TextMap carrier = new TextMapInjectAdapter(new HashMap<>());
-tracer.inject(currentSpan.context(), Format.Builtin.HTTP_HEADERS, carrier);
-
-// loop over the injected text map and set its contents on the HTTP request header...
-```
-
-Extract the propagated span context on receiving a HTTP request:
-```java
-TextMap carrier = new TextMapExtractAdapter(new HashMap<>());
-SpanContext ctx = tracer.extract(Format.Builtin.HTTP_HEADERS, carrier);
-Span receivingSpan = tracer.buildSpan("httpRequestOperationName").asChildOf(ctx).startActive(true);
-```
+See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
 
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master
 [ci]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java
 [maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=2592000
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
+
