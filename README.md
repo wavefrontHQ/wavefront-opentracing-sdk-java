@@ -3,7 +3,7 @@
 The Wavefront by VMware OpenTracing SDK for Java is a library that provides open tracing support for Wavefront.
 
 ## Maven
-If you are using Maven, add the following maven dependency to your pom.xml:
+If you are using Maven, add the following maven dependency to your `pom.xml`:
 ```
 <dependency>
   <groupId>com.wavefront</groupId>
@@ -18,28 +18,31 @@ Replace `$releaseVersion` with the latest version available on [maven](http://se
 
 This SDK provides a `WavefrontTracer` for creating spans and sending them to Wavefront. The steps for creating a `WavefrontTracer` are:
 1. Create an `ApplicationTags` instance, which specifies metadata about your application.
-2. Create a `WavefrontSender` for sending data to Wavefront.
+2. Create a `WavefrontSender` for sending trace data to Wavefront.
 3. Create a `WavefrontSpanReporter` for reporting trace data to Wavefront.
 4. Create the `WavefrontTracer` instance.
 
-Below sample code explains how to create a Tracer. The exact steps in the sample code are explained in detail below.
+The following code sample creates a Tracer. For the details of each step, see the sections below.
 
 ```java
 Tracer createWavefrontTracer(String application, String service) throws IOException {
-  // Step 1. Set Up Application Tags
+  // Step 1. Create ApplicationTags. 
   ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
-  // Step 2. Assuming you are sending the tracing spans from your application to Wavefront via proxy.
+  
+  // Step 2. Create a WavefrontSender for sending trace data via a Wavefront proxy.
+  //         Assume you have installed and started the proxy on <proxyHostname>.
   WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
         metricsPort(2878).tracingPort(30000).build();
-  // Step 3. Create WavefrontSpanReporter
+        
+  // Step 3. Create a WavefrontSpanReporter for reporting trace data that originates on <sourceName>.
   Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
-        withSource(<source>).build(wavefrontSender);
-  // Step 4. Create WavefrontTracer
+        withSource(<sourceName>).build(wavefrontSender);
+        
+  // Step 4. Create the WavefrontTracer.
   return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
 }
 ```
 
-For the details of each step, see the sections below.
 
 ### 1. Set Up Application Tags
 
@@ -50,18 +53,18 @@ See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk
 
 ### 2. Set Up a WavefrontSender
 
-A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. 
+A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
 * If you have already set up a `WavefrontSender` for another SDK that will run in the same JVM, use that one.  (For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#share-a-wavefrontsender).)
 
-* Otherwise, follow the steps in [Set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender) to send data using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
+* Otherwise, follow the steps in [Set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
 
 
 ### 3. Reporter
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. You can optionally create a `CompositeReporter` to send data to Wavefront and to print to the console.
 
 #### Create a WavefrontSpanReporter
-To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender` and optionally specify a source for the reported spans. If you omit the source, the host name is automatically used.
+To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. You can optionally specify a string that represents the source for the reported spans. If you omit the source, the host name is automatically used.
 
 To create a `WavefrontSpanReporter`:
 
@@ -86,7 +89,7 @@ A `CompositeReporter` enables you to chain a `WavefrontSpanReporter` to another 
 
 ```java
 // Create a console reporter that reports span to stdout
-Reporter consoleReporter = new ConsoleReporter("sourceName"); // Specify the same source you used for the WavefrontSpanReporter
+Reporter consoleReporter = new ConsoleReporter(<sourceName>); // Specify the same source you used for the WavefrontSpanReporter
 
 // Instantiate a composite reporter composed of a console reporter and a WavefrontSpanReporter
 Reporter compositeReporter = new CompositeReporter(wfSpanReporter, consoleReporter);
