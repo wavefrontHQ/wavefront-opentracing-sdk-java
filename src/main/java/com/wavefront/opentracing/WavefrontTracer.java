@@ -96,12 +96,12 @@ public class WavefrontTracer implements Tracer, Closeable {
       boolean doSample = earlySampling == sampler.isEarly();
       if (doSample && sampler.sample(operationName, traceId, duration)) {
         if (logger.isLoggable(Level.FINER)) {
-          logger.finer(sampler.getClass().getSimpleName() + "=" + true + "op=" + operationName);
+          logger.finer(sampler.getClass().getSimpleName() + "=" + true + " op=" + operationName);
         }
         return true;
       }
       if (logger.isLoggable(Level.FINER)) {
-        logger.finer(sampler.getClass().getSimpleName() + "=" + false + "op=" + operationName);
+        logger.finer(sampler.getClass().getSimpleName() + "=" + false + " op=" + operationName);
       }
     }
     return false;
