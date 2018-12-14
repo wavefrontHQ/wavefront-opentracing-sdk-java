@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware OpenTracing SDK for Java 0.9.1 GA
+Wavefront by VMware OpenTracing SDK for Java 0.9.2 GA
 
 ======================================================================
 
@@ -126,7 +126,6 @@ Copyright (c) 2005 Brian Goetz
 Released under the Creative Commons Attribution License
 (http://creativecommons.org/licenses/by/2.5)
 Official home: http://www.jcip.net
-
 
 =============== APPENDIX. Standard License Files ============== 
 
@@ -376,7 +375,7 @@ UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS T
     This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
 	
 	
-
+	
 ======================================================================
 
 To the extent any open source components are licensed under the GPL
@@ -395,4 +394,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVA090GANT110618]
+[WAVEFRONTOPENTRACINGSDKJAVA092GANT121318]
