@@ -140,8 +140,8 @@ public class WavefrontSpanBuilderTest {
         asChildOf(parentCtx).
         start();
 
-    assertFalse(tracer.sample(span.getOperationName(), span.context().getTraceId()
-        .getLeastSignificantBits(), 0));
+    assertFalse(tracer.sample(span.getOperationName(), span.context().getTraceId().
+        getLeastSignificantBits(), 0));
     assertNotNull(span);
     assertEquals(parentCtx.getTraceId().toString(), span.context().getTraceId().toString());
     assertTrue(span.context().isSampled());
@@ -166,8 +166,8 @@ public class WavefrontSpanBuilderTest {
         asChildOf(parentCtx).
         start();
 
-    assertTrue(tracer.sample(span.getOperationName(), span.context().getTraceId()
-        .getLeastSignificantBits(), 0));
+    assertTrue(tracer.sample(span.getOperationName(), span.context().getTraceId().
+        getLeastSignificantBits(), 0));
     assertNotNull(span);
     assertEquals(parentCtx.getTraceId().toString(), span.context().getTraceId().toString());
     assertTrue(span.context().isSampled());

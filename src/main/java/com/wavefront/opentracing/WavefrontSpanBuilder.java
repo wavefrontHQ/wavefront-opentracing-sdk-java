@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import io.opentracing.References;
@@ -145,11 +146,12 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
   private WavefrontSpanContext createSpanContext() {
     UUID spanId = UUID.randomUUID();
     WavefrontSpanContext traceCtx = traceAncestry();
-    UUID traceId = traceCtx == null ? UUID.randomUUID() : traceCtx.getTraceId();
-    Boolean sampling = traceCtx == null ? null : traceCtx.getSamplingDecision();
+    UUID traceId = (traceCtx == null) ? UUID.randomUUID() : traceCtx.getTraceId();
+    Boolean sampling = (traceCtx == null) ? null : traceCtx.getSamplingDecision();
     return new WavefrontSpanContext(traceId, spanId, null, sampling);
   }
 
+  @Nullable
   private WavefrontSpanContext traceAncestry() {
     if (parents != null && !parents.isEmpty()) {
       // prefer child_of relationship for assigning traceId

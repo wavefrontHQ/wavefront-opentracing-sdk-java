@@ -80,11 +80,14 @@ public class WavefrontSpan implements Span {
     if (key != null && !key.isEmpty() && value != null) {
       tags.add(Pair.of(key, value.toString()));
 
+      // allow span to be reported if sampling.priority is > 0.
       if (Tags.SAMPLING_PRIORITY.getKey().equals(key) && value instanceof Number) {
         int priority = ((Number) value).intValue();
         forceSampling = priority > 0 ? Boolean.TRUE : Boolean.FALSE;
         spanContext = spanContext.withSamplingDecision(forceSampling);
       }
+
+      // allow span to be reported if error tag is set.
       if (forceSampling == null && Tags.ERROR.getKey().equals(key)) {
         if (value instanceof Boolean && (Boolean) value) {
           forceSampling = Boolean.TRUE;
