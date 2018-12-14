@@ -3,6 +3,7 @@ package com.wavefront.opentracing;
 import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
 import com.wavefront.opentracing.reporting.Reporter;
+import com.wavefront.sdk.entities.tracing.sampling.Sampler;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.application.ApplicationTags;
 
@@ -41,13 +42,15 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final PropagatorRegistry registry;
   private final Reporter reporter;
   private final List<Pair<String, String>> tags;
+  private final List<Sampler> samplers;
 
-  private WavefrontTracer(Reporter reporter, List<Pair<String, String>> tags) {
+  private WavefrontTracer(Reporter reporter, List<Pair<String, String>> tags,
+                          List<Sampler> samplers) {
     scopeManager = new ThreadLocalScopeManager();
     registry = new PropagatorRegistry();
     this.reporter = reporter;
     this.tags = tags;
-    //TODO: figure out sampling
+    this.samplers = samplers;
   }
 
   @Override
@@ -84,6 +87,26 @@ public class WavefrontTracer implements Tracer, Closeable {
     return propagator.extract(carrier);
   }
 
+  boolean sample(String operationName, long traceId, long duration) {
+    if (samplers == null || samplers.isEmpty()) {
+      return true;
+    }
+    boolean earlySampling = (duration == 0);
+    for (Sampler sampler : samplers) {
+      boolean doSample = earlySampling == sampler.isEarly();
+      if (doSample && sampler.sample(operationName, traceId, duration)) {
+        if (logger.isLoggable(Level.FINER)) {
+          logger.finer(sampler.getClass().getSimpleName() + "=" + true + " op=" + operationName);
+        }
+        return true;
+      }
+      if (logger.isLoggable(Level.FINER)) {
+        logger.finer(sampler.getClass().getSimpleName() + "=" + false + " op=" + operationName);
+      }
+    }
+    return false;
+  }
+
   void reportSpan(WavefrontSpan span) {
     // reporter will flush it to Wavefront/proxy
     try {
@@ -113,6 +136,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     private final List<Pair<String, String>> tags;
     private final Reporter reporter;
     private final ApplicationTags applicationTags;
+    private final List<Sampler> samplers;
 
     /**
      * Constructor.
@@ -121,6 +145,7 @@ public class WavefrontTracer implements Tracer, Closeable {
       this.reporter = reporter;
       this.applicationTags = applicationTags;
       this.tags = new ArrayList<>();
+      this.samplers = new ArrayList<>();
     }
 
     /**
@@ -185,13 +210,27 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
+     * Sampler for sampling traces.
+     *
+     * Samplers can be chained by calling this method multiple times. Sampling decisions are
+     * OR'd when multiple samplers are used.
+     *
+     * @param sampler
+     * @return {@code this}
+     */
+    public Builder withSampler(Sampler sampler) {
+      this.samplers.add(sampler);
+      return this;
+    }
+
+    /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
      *
      * @return a {@link WavefrontTracer}
      */
     public WavefrontTracer build() {
       withApplicationTags(applicationTags);
-      return new WavefrontTracer(reporter, tags);
+      return new WavefrontTracer(reporter, tags, samplers);
     }
   }
 

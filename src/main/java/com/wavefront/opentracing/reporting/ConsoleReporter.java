@@ -41,7 +41,7 @@ public class ConsoleReporter implements Reporter {
     String spanLine = Utils.tracingSpanToLineData(span.getOperationName(),
         span.getStartTimeMicros(), span.getDurationMicroseconds(), source, ctx.getTraceId(),
         ctx.getSpanId(), parents, follows, span.getTagsAsList(), null, "unknown");
-    System.out.println("Finished span: " + spanLine);
+    System.out.println("Finished span: sampling=" + ctx.getSamplingDecision() + " " + spanLine);
   }
 
   @Override

@@ -21,6 +21,7 @@ public class TextMapPropagator implements Propagator<TextMap> {
   private static final String BAGGAGE_PREFIX = "wf-ot-";
   private static final String TRACE_ID = BAGGAGE_PREFIX + "traceid";
   private static final String SPAN_ID = BAGGAGE_PREFIX + "spanid";
+  private static final String SAMPLE = BAGGAGE_PREFIX + "sample";
 
   @Override
   public void inject(WavefrontSpanContext spanContext, TextMap carrier) {
@@ -28,6 +29,9 @@ public class TextMapPropagator implements Propagator<TextMap> {
     carrier.put(SPAN_ID, spanContext.getSpanId().toString());
     for (Map.Entry<String, String> entry : spanContext.baggageItems()) {
       carrier.put(BAGGAGE_PREFIX + entry.getKey(), entry.getValue());
+    }
+    if (spanContext.isSampled()) {
+      carrier.put(SAMPLE, spanContext.getSamplingDecision().toString());
     }
   }
 
@@ -38,6 +42,7 @@ public class TextMapPropagator implements Propagator<TextMap> {
     UUID traceId = null;
     UUID spanId = null;
     Map<String, String> baggage = null;
+    Boolean sampling = null;
 
     for (Map.Entry<String, String> entry : carrier) {
       //TODO: verify locale
@@ -47,6 +52,8 @@ public class TextMapPropagator implements Propagator<TextMap> {
         traceId = UUID.fromString(entry.getValue());
       } else if (SPAN_ID.equals(key)) {
         spanId = UUID.fromString(entry.getValue());
+      } else if (SAMPLE.equals(key)) {
+        sampling = Boolean.valueOf(entry.getValue());
       } else if (key.startsWith(BAGGAGE_PREFIX)) {
         if (baggage == null) {
           baggage = new HashMap<>();
@@ -58,7 +65,7 @@ public class TextMapPropagator implements Propagator<TextMap> {
     if (traceId == null || spanId == null) {
       return null;
     }
-    return new WavefrontSpanContext(traceId, spanId, baggage);
+    return new WavefrontSpanContext(traceId, spanId, baggage, sampling);
   }
 
   private static String stripPrefix(String key) {

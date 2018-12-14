@@ -18,15 +18,17 @@ public class WavefrontSpanContext implements SpanContext {
 
   private final UUID traceId;
   private final UUID spanId;
+  private final Boolean samplingDecision;
   private final Map<String, String> baggage;
 
   public WavefrontSpanContext(UUID traceId, UUID spanId) {
-    this(traceId, spanId, null);
+    this(traceId, spanId, null, null);
   }
 
-  public WavefrontSpanContext(UUID traceId, UUID spanId, Map<String, String> baggage) {
+  public WavefrontSpanContext(UUID traceId, UUID spanId, Map<String, String> baggage, Boolean decision) {
     this.traceId = traceId;
     this.spanId = spanId;
+    this.samplingDecision = decision;
 
     // expected that most contexts will have no bagagge items except when propagated
     this.baggage = (baggage == null) ? Collections.emptyMap() : baggage;
@@ -45,7 +47,11 @@ public class WavefrontSpanContext implements SpanContext {
   public WavefrontSpanContext withBaggageItem(String key, String value) {
     Map<String, String> items = new HashMap<>(baggage);
     items.put(key, value);
-    return new WavefrontSpanContext(traceId, spanId, items);
+    return new WavefrontSpanContext(traceId, spanId, items, samplingDecision);
+  }
+
+  WavefrontSpanContext withSamplingDecision(boolean decision) {
+    return new WavefrontSpanContext(traceId, spanId, baggage, Boolean.valueOf(decision));
   }
 
   public UUID getTraceId() {
@@ -54,6 +60,15 @@ public class WavefrontSpanContext implements SpanContext {
 
   public UUID getSpanId() {
     return spanId;
+  }
+
+  public boolean isSampled() {
+    return samplingDecision != null;
+  }
+
+  @Nullable
+  public Boolean getSamplingDecision() {
+    return samplingDecision;
   }
 
   @Override

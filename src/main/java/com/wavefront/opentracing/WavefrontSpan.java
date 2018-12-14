@@ -2,6 +2,7 @@ package com.wavefront.opentracing;
 
 import com.wavefront.sdk.common.Pair;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 
 /**
  * Represents a thread-safe Wavefront trace span based on OpenTracing's {@link Span}.
@@ -32,6 +34,7 @@ public class WavefrontSpan implements Span {
   private String operationName;
   private long durationMicroseconds;
   private WavefrontSpanContext spanContext;
+  private Boolean forceSampling = null;
   private boolean finished = false;
 
   WavefrontSpan(WavefrontTracer tracer, String operationName, WavefrontSpanContext spanContext,
@@ -44,7 +47,13 @@ public class WavefrontSpan implements Span {
     this.startTimeNanos = startTimeNanos;
     this.parents = parents;
     this.follows = follows;
-    this.tags = tags;
+
+    this.tags = (tags == null || tags.isEmpty()) ? null : new ArrayList<>();
+    if (tags != null) {
+      for (Pair<String, String> tag : tags) {
+        setTagObject(tag._1, tag._2);
+      }
+    }
   }
 
   @Override
@@ -70,6 +79,21 @@ public class WavefrontSpan implements Span {
   private synchronized WavefrontSpan setTagObject(String key, Object value) {
     if (key != null && !key.isEmpty() && value != null) {
       tags.add(Pair.of(key, value.toString()));
+
+      // allow span to be reported if sampling.priority is > 0.
+      if (Tags.SAMPLING_PRIORITY.getKey().equals(key) && value instanceof Number) {
+        int priority = ((Number) value).intValue();
+        forceSampling = priority > 0 ? Boolean.TRUE : Boolean.FALSE;
+        spanContext = spanContext.withSamplingDecision(forceSampling);
+      }
+
+      // allow span to be reported if error tag is set.
+      if (forceSampling == null && Tags.ERROR.getKey().equals(key)) {
+        if (value instanceof Boolean && (Boolean) value) {
+          forceSampling = Boolean.TRUE;
+          spanContext = spanContext.withSamplingDecision(forceSampling);
+        }
+      }
     }
     return this;
   }
@@ -140,7 +164,18 @@ public class WavefrontSpan implements Span {
       this.durationMicroseconds = durationMicros;
       finished = true;
     }
-    tracer.reportSpan(this);
+
+    // perform another sampling for duration based samplers
+    if (forceSampling == null && (!spanContext.isSampled() || !spanContext.getSamplingDecision())) {
+      boolean decision = tracer.sample(operationName,
+          spanContext.getTraceId().getLeastSignificantBits(), durationMicros/1000);
+      spanContext = decision ? spanContext.withSamplingDecision(decision) : spanContext;
+    }
+
+    // only report spans if the sampling decision allows it
+    if (spanContext.isSampled() && spanContext.getSamplingDecision()) {
+      tracer.reportSpan(this);
+    }
   }
 
   public synchronized String getOperationName() {
