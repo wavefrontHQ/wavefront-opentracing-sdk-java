@@ -1,4 +1,4 @@
-# wavefront-opentracing-sdk-java [![build status][ci-img]][ci] [![Released Version][maven-img]][maven]
+# wavefront-opentracing-sdk-java [![build status][ci-img]][ci] [![Released Version][maven-img]][maven] [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
 
 The Wavefront by VMware OpenTracing SDK for Java is a library that provides open tracing support for Wavefront.
 
