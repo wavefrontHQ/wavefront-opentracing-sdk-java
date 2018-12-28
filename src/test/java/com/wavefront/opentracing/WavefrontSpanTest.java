@@ -31,7 +31,7 @@ import static org.easymock.EasyMock.verify;
  */
 public class WavefrontSpanTest {
 
-  @Disabled("Long running test")
+  @Disabled
   @Test
   public void testValidWavefrontSpan() throws IOException, InterruptedException {
     String operationName = "dummyOp";
@@ -68,7 +68,9 @@ public class WavefrontSpanTest {
         buildApplicationTags()).build();
     tracer.buildSpan("dummyOp").startActive(true).close();
     // Sleep for 60+ seconds
-    Thread.sleep(1000 * 90);
+    System.out.println("Sleeping for 75 seconds zzzzz .....");
+    Thread.sleep(1000 * 75);
+    System.out.println("Resuming execution .....");
     verify(wfSender);
   }
 }
