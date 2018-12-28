@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import io.opentracing.tag.Tags;
-
 import static com.wavefront.opentracing.Utils.buildApplicationTags;
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
 import static org.easymock.EasyMock.anyLong;
@@ -68,9 +66,9 @@ public class WavefrontSpanTest {
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).build();
-    tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), "true").startActive(true).close();
-    // Sleep for 60 seconds
-    Thread.sleep(1000 * 120);
+    tracer.buildSpan("dummyOp").startActive(true).close();
+    // Sleep for 60+ seconds
+    Thread.sleep(1000 * 90);
     verify(wfSender);
   }
 }
