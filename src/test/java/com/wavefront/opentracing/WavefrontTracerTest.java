@@ -2,9 +2,8 @@ package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
 import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
-import com.wavefront.sdk.common.application.ApplicationTags;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,18 +15,14 @@ import io.opentracing.propagation.TextMap;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
 
+import static com.wavefront.opentracing.Utils.buildApplicationTags;
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WavefrontTracerTest {
-
-  private ApplicationTags buildApplicationTags() {
-    return new ApplicationTags.Builder("myApplication", "myService").build();
-  }
-
   @Test
   public void testInjectExtract() {
     WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
@@ -103,7 +98,7 @@ public class WavefrontTracerTest {
     assertNotNull(span.getTagsAsMap());
     // Note: Will emit ApplicationTags along with regular tags.
     assertEquals(7, span.getTagsAsMap().size());
-    assertTrue("bar1", span.getTagsAsMap().get("foo1").contains("bar1"));
+    assertTrue(span.getTagsAsMap().get("foo1").contains("bar1"));
     assertTrue(span.getTagsAsMap().get("foo2").contains("bar2"));
     assertTrue(span.getTagsAsMap().get("foo3").contains("bar3"));
   }

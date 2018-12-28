@@ -1,10 +1,10 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
-import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 import com.wavefront.sdk.common.application.ApplicationTags;
+import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
@@ -13,11 +13,11 @@ import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WavefrontSpanBuilderTest {
 
