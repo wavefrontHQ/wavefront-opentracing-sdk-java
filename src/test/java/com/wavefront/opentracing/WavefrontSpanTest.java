@@ -4,7 +4,6 @@ import com.wavefront.opentracing.reporting.WavefrontSpanReporter;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,6 +12,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import io.opentracing.tag.Tags;
 
 import static com.wavefront.opentracing.Utils.buildApplicationTags;
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
@@ -31,46 +32,89 @@ import static org.easymock.EasyMock.verify;
  */
 public class WavefrontSpanTest {
 
-  @Disabled
   @Test
   public void testValidWavefrontSpan() throws IOException, InterruptedException {
     String operationName = "dummyOp";
-    Map<String, String> pointTags = new HashMap<String, String>() {{
+    Map<String, String> pointTags = pointTags(operationName);
+    WavefrontSender wfSender = createMock(WavefrontSender.class);
+    wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
+        anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
+        anyObject(), eq(null));
+    expectLastCall();
+
+    wfSender.sendMetric(eq(
+        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
+    // advance minute bin and change the below call to expectLastCall().atLeastOnce();
+    wfSender.sendDistribution(eq(
+        "tracing.derived.myApplication.myService.dummyOp.duration.micros"),
+        anyObject(), eq(new HashSet<>(Arrays.asList(HistogramGranularity.MINUTE))), anyLong(),
+        eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().anyTimes();
+
+    replay(wfSender);
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
+        buildApplicationTags()).setReportFrequenceMillis(50).build();
+    tracer.buildSpan("dummyOp").startActive(true).close();
+    // Sleep for 1 seconds
+    System.out.println("Sleeping for 1 second zzzzz .....");
+    Thread.sleep(1000);
+    System.out.println("Resuming execution .....");
+    verify(wfSender);
+  }
+
+  @Test
+  public void testErrorWavefrontSpan() throws IOException, InterruptedException {
+    String operationName = "dummyOp";
+    Map<String, String> pointTags = pointTags(operationName);
+    WavefrontSender wfSender = createMock(WavefrontSender.class);
+    wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
+        anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
+        anyObject(), eq(null));
+    expectLastCall();
+
+    wfSender.sendMetric(eq(
+        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendMetric(eq(
+        "tracing.derived.myApplication.myService.dummyOp.error.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
+    // advance minute bin and change the below call to expectLastCall().atLeastOnce();
+    wfSender.sendDistribution(eq(
+        "tracing.derived.myApplication.myService.dummyOp.duration.micros"),
+        anyObject(), eq(new HashSet<>(Arrays.asList(HistogramGranularity.MINUTE))), anyLong(),
+        eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().anyTimes();
+
+    replay(wfSender);
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
+        buildApplicationTags()).setReportFrequenceMillis(50).build();
+    tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), true).
+        startActive(true).close();
+    // Sleep for 60+ seconds
+    System.out.println("Sleeping for 1 second zzzzz .....");
+    Thread.sleep(1000);
+    System.out.println("Resuming execution .....");
+    verify(wfSender);
+  }
+
+  private Map<String, String> pointTags(String operationName) {
+    return new HashMap<String, String>() {{
       put("application", "myApplication");
       put("service", "myService");
       put("cluster", "none");
       put("shard", "none");
       put("operationName", operationName);
     }};
-    WavefrontSender wfSender = createMock(WavefrontSender.class);
-    wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
-        anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
-        anyObject(), eq(null));
-    expectLastCall();
-    wfSender.sendMetric(eq("~component.heartbeat"), eq(1.0) , anyLong(), eq
-            (DEFAULT_SOURCE), anyObject());
-    expectLastCall();
-
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
-    expectLastCall();
-
-    wfSender.sendDistribution(eq(
-        "tracing.derived.myApplication.myService.dummyOp.duration.micros"),
-        anyObject(), eq(new HashSet<>(Arrays.asList(HistogramGranularity.MINUTE))), anyLong(),
-        eq(DEFAULT_SOURCE), eq(pointTags));
-    expectLastCall();
-
-    replay(wfSender);
-    WavefrontTracer tracer = new WavefrontTracer.Builder(
-        new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
-        buildApplicationTags()).build();
-    tracer.buildSpan("dummyOp").startActive(true).close();
-    // Sleep for 60+ seconds
-    System.out.println("Sleeping for 75 seconds zzzzz .....");
-    Thread.sleep(1000 * 75);
-    System.out.println("Resuming execution .....");
-    verify(wfSender);
   }
 }

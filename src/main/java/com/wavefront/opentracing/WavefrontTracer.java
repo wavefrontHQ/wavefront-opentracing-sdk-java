@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,6 +58,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final WavefrontInternalReporter wfInternalReporter;
   @Nullable
   private final HeartbeaterService heartbeaterService;
+  private final Supplier<Long> reportFrequencyMillis;
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String INVOCATION_SUFFIX = ".invocation";
   private final static String ERROR_SUFFIX = ".error";
@@ -65,7 +67,8 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final String applicationServicePrefix;
 
   private WavefrontTracer(Reporter reporter, List<Pair<String, String>> tags,
-                          ApplicationTags applicationTags, List<Sampler> samplers) {
+                          ApplicationTags applicationTags, List<Sampler> samplers,
+                          Supplier<Long> reportFrequencyMillis) {
     scopeManager = new ThreadLocalScopeManager();
     registry = new PropagatorRegistry();
     this.reporter = reporter;
@@ -73,6 +76,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.samplers = samplers;
     applicationServicePrefix = applicationTags.getApplication() + "." +
         applicationTags.getService() + ".";
+    this.reportFrequencyMillis = reportFrequencyMillis;
 
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
@@ -91,7 +95,7 @@ public class WavefrontTracer implements Tracer, Closeable {
         if (item instanceof WavefrontSpanReporter) {
           tmp = instantiateWavefrontMetricsHistogramsReporter((WavefrontSpanReporter) item,
               applicationTags);
-          // only one item from the list if WavefrontSpanReporter
+          // only one item from the list is WavefrontSpanReporter
           break;
         }
       }
@@ -128,7 +132,7 @@ public class WavefrontTracer implements Tracer, Closeable {
         withReporterPointTags(pointTags).reportMinuteDistribution().
             build(wfSpanReporter.getWavefrontSender());
     // Start the reporter
-    wfInternalReporter.start(1, TimeUnit.MINUTES);
+    wfInternalReporter.start(reportFrequencyMillis.get(), TimeUnit.MILLISECONDS);
 
     HeartbeaterService heartbeaterService = new HeartbeaterService(
         wfSpanReporter.getWavefrontSender(), applicationTags, WAVEFRONT_GENERATED_COMPONENT,
@@ -255,6 +259,8 @@ public class WavefrontTracer implements Tracer, Closeable {
     // application metadata, will not have repeated tags and will be low cardinality tags
     private final ApplicationTags applicationTags;
     private final List<Sampler> samplers;
+    // Default to 1min
+    private Supplier<Long> reportingFrequencyMillis = () -> 60000L;
 
     /**
      * Constructor.
@@ -340,13 +346,25 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
+     * Visible for testing only.
+     *
+     * @param reportFrequenceMillis how frequently you want to report data to Wavefront.
+     * @return {@code this}
+     */
+    Builder setReportFrequenceMillis(long reportFrequenceMillis) {
+      this.reportingFrequencyMillis = () -> reportFrequenceMillis;
+      return this;
+    }
+
+    /**
      * Builds and returns the WavefrontTracer instance based on the provided configuration.
      *
      * @return a {@link WavefrontTracer}
      */
     public WavefrontTracer build() {
       applyApplicationTags();
-      return new WavefrontTracer(reporter, tags, applicationTags, samplers);
+      return new WavefrontTracer(reporter, tags, applicationTags, samplers,
+          reportingFrequencyMillis);
     }
   }
 
