@@ -55,6 +55,11 @@ public class WavefrontSpanTest {
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
 
+    wfSender.sendMetric(eq(
+        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
     replay(wfSender);
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
@@ -94,6 +99,11 @@ public class WavefrontSpanTest {
         anyObject(), eq(new HashSet<>(Arrays.asList(HistogramGranularity.MINUTE))), anyLong(),
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
+
+    wfSender.sendMetric(eq(
+        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
 
     replay(wfSender);
     WavefrontTracer tracer = new WavefrontTracer.Builder(

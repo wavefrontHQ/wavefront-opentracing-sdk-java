@@ -62,6 +62,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String INVOCATION_SUFFIX = ".invocation";
   private final static String ERROR_SUFFIX = ".error";
+  private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
   private final static String DURATION_SUFFIX = ".duration.micros";
   private final static String OPERATION_NAME_TAG = "operationName";
   private final String applicationServicePrefix;
@@ -210,10 +211,14 @@ public class WavefrontTracer implements Tracer, Closeable {
       wfInternalReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
           span.getOperationName() + ERROR_SUFFIX), pointTags)).inc();
     }
+    long spanDurationMicros = span.getDurationMicroseconds();
+    // Convert from micros to millis and add to duration counter
+    wfInternalReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
+        span.getOperationName() + TOTAL_TIME_SUFFIX), pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
     wfInternalReporter.newWavefrontHistogram(new MetricName(sanitize(applicationServicePrefix +
         span.getOperationName() + DURATION_SUFFIX), pointTags)).
-        update(span.getDurationMicroseconds());
+        update(spanDurationMicros);
   }
 
   private String sanitize(String s) {
