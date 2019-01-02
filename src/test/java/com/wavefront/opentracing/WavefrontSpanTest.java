@@ -52,12 +52,12 @@ public class WavefrontSpanTest {
     expectLastCall();
 
     wfSender.sendMetric(eq(
-        "tracing.span.wavefront-generated.myApplication.myService.dummyOp.invocation.count"),
+        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall();
 
     wfSender.sendDistribution(eq(
-        "tracing.span.wavefront-generated.myApplication.myService.dummyOp.duration.micros"),
+        "tracing.derived.myApplication.myService.dummyOp.duration.micros"),
         anyObject(), eq(new HashSet<>(Arrays.asList(HistogramGranularity.MINUTE))), anyLong(),
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall();

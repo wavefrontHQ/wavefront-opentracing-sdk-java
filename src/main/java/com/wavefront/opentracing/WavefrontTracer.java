@@ -124,7 +124,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     WavefrontInternalReporter wfInternalReporter = new WavefrontInternalReporter.Builder().
-        prefixedWith("tracing.span.wavefront-generated").withSource(wfSpanReporter.getSource()).
+        prefixedWith("tracing.derived").withSource(wfSpanReporter.getSource()).
         withReporterPointTags(pointTags).reportMinuteDistribution().
             build(wfSpanReporter.getWavefrontSender());
     // Start the reporter
