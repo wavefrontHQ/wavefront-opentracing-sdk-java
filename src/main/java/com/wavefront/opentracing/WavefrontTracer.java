@@ -83,34 +83,35 @@ public class WavefrontTracer implements Tracer, Closeable {
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
      * only if you use the WavefrontSpanReporter
      */
-    if (reporter instanceof WavefrontSpanReporter) {
+    WavefrontSpanReporter wfSpanReporter = getWavefrontSpanReporter(reporter);
+    if (wfSpanReporter != null) {
       Pair<WavefrontInternalReporter, HeartbeaterService> pair =
-          instantiateWavefrontStatsReporter((WavefrontSpanReporter) reporter,
-              applicationTags);
+          instantiateWavefrontStatsReporter(wfSpanReporter, applicationTags);
       wfInternalReporter = pair._1;
       heartbeaterService = pair._2;
-    } else if (reporter instanceof CompositeReporter) {
-      CompositeReporter compositeReporter = (CompositeReporter) reporter;
-      Pair<WavefrontInternalReporter, HeartbeaterService> tmp = null;
-      for (Reporter item : compositeReporter.getReporters()) {
-        if (item instanceof WavefrontSpanReporter) {
-          tmp = instantiateWavefrontStatsReporter((WavefrontSpanReporter) item,
-              applicationTags);
-          // only one item from the list is WavefrontSpanReporter
-          break;
-        }
-      }
-      if (tmp != null) {
-        wfInternalReporter = tmp._1;
-        heartbeaterService = tmp._2;
-      } else {
-        wfInternalReporter = null;
-        heartbeaterService = null;
-      }
     } else {
       wfInternalReporter = null;
       heartbeaterService = null;
     }
+  }
+
+  @Nullable
+  private WavefrontSpanReporter getWavefrontSpanReporter(Reporter reporter) {
+    if (reporter instanceof WavefrontSpanReporter) {
+      return (WavefrontSpanReporter) reporter;
+    }
+
+    if (reporter instanceof CompositeReporter) {
+      CompositeReporter compositeReporter = (CompositeReporter) reporter;
+      for (Reporter item : compositeReporter.getReporters()) {
+        if (item instanceof WavefrontSpanReporter) {
+          return (WavefrontSpanReporter) item;
+        }
+      }
+    }
+
+    // default
+    return null;
   }
 
   private Pair<WavefrontInternalReporter, HeartbeaterService> instantiateWavefrontStatsReporter(
