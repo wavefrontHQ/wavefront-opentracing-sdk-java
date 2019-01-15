@@ -85,7 +85,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     if (reporter instanceof WavefrontSpanReporter) {
       Pair<WavefrontInternalReporter, HeartbeaterService> pair =
-          instantiateWavefrontMetricsHistogramsReporter((WavefrontSpanReporter) reporter,
+          instantiateWavefrontStatsReporter((WavefrontSpanReporter) reporter,
               applicationTags);
       wfInternalReporter = pair._1;
       heartbeaterService = pair._2;
@@ -94,7 +94,7 @@ public class WavefrontTracer implements Tracer, Closeable {
       Pair<WavefrontInternalReporter, HeartbeaterService> tmp = null;
       for (Reporter item : compositeReporter.getReporters()) {
         if (item instanceof WavefrontSpanReporter) {
-          tmp = instantiateWavefrontMetricsHistogramsReporter((WavefrontSpanReporter) item,
+          tmp = instantiateWavefrontStatsReporter((WavefrontSpanReporter) item,
               applicationTags);
           // only one item from the list is WavefrontSpanReporter
           break;
@@ -113,9 +113,8 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
   }
 
-  private Pair<WavefrontInternalReporter, HeartbeaterService>
-  instantiateWavefrontMetricsHistogramsReporter(WavefrontSpanReporter wfSpanReporter,
-                                                ApplicationTags applicationTags) {
+  private Pair<WavefrontInternalReporter, HeartbeaterService> instantiateWavefrontStatsReporter(
+      WavefrontSpanReporter wfSpanReporter, ApplicationTags applicationTags) {
     // TODO - this helper method should go in Tier 1 SDK
     Map<String, String> pointTags = new HashMap<>();
     pointTags.put(APPLICATION_TAG_KEY, applicationTags.getApplication());
