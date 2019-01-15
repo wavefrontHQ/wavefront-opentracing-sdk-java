@@ -36,6 +36,7 @@ public class WavefrontSpan implements Span {
   private WavefrontSpanContext spanContext;
   private Boolean forceSampling = null;
   private boolean finished = false;
+  private boolean isError = false;
 
   WavefrontSpan(WavefrontTracer tracer, String operationName, WavefrontSpanContext spanContext,
                 long startTimeMicros, long startTimeNanos, List<Reference> parents,
@@ -87,6 +88,10 @@ public class WavefrontSpan implements Span {
         spanContext = spanContext.withSamplingDecision(forceSampling);
       }
 
+      if (Tags.ERROR.getKey().equals(key)) {
+        isError = true;
+      }
+
       // allow span to be reported if error tag is set.
       if (forceSampling == null && Tags.ERROR.getKey().equals(key)) {
         if (value instanceof Boolean && (Boolean) value) {
@@ -96,6 +101,10 @@ public class WavefrontSpan implements Span {
       }
     }
     return this;
+  }
+
+  public boolean isError () {
+    return isError;
   }
 
   @Override
@@ -176,6 +185,8 @@ public class WavefrontSpan implements Span {
     if (spanContext.isSampled() && spanContext.getSamplingDecision()) {
       tracer.reportSpan(this);
     }
+    // irrespective of sampling, report wavefront-generated metrics/histograms to Wavefront
+    tracer.reportWavefrontGeneratedData(this);
   }
 
   public synchronized String getOperationName() {

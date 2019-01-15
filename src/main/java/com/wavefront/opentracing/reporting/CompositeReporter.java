@@ -22,6 +22,11 @@ public class CompositeReporter implements Reporter {
     }
   }
 
+  public List<Reporter> getReporters() {
+    // return a copy so that original list is not modified
+    return new ArrayList<>(reporters);
+  }
+
   @Override
   public void report(WavefrontSpan span) throws IOException {
     for (Reporter reporter : reporters) {

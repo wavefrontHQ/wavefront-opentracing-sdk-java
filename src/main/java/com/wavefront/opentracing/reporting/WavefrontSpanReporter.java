@@ -97,6 +97,14 @@ public class WavefrontSpanReporter implements Reporter {
     }
   }
 
+  public String getSource() {
+    return source;
+  }
+
+  public WavefrontSender getWavefrontSender() {
+    return wavefrontSender;
+  }
+
   @Override
   public int getFailureCount() {
     return wavefrontSender.getFailureCount();
