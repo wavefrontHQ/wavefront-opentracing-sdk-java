@@ -13,3 +13,5 @@ The following RED metrics are collected and reported:
 | `tracing.derived.<application>.<service>.<operationName>.error.count`             | Counter            | The number of invocations that are errors (i.e., spans with `error=true`). |
 | `tracing.derived.<application>.<service>.<operationName>.total_time.millis.count` | Counter            | The total duration of the operation invocations, in milliseconds. |
 | `tracing.derived.<application>.<service>.<operationName>.duration.micros.m`       | WavefrontHistogram | The duration of each operation invocation, in microseconds. |
+
+Additionally, note that each of these RED metrics will have point tags for `application`, `service`, and `operationName`. It is encouraged that you search for these metrics by tag instead of by name because the metric names themselves may be modified to comply with Wavefront's metric name format.
