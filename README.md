@@ -16,7 +16,8 @@ Replace `$releaseVersion` with the latest version available on [maven](http://se
 ## Set Up a Tracer
 [Tracer](https://github.com/opentracing/specification/blob/master/specification.md#tracer) is an OpenTracing [interface](https://github.com/opentracing/opentracing-java#initialization) for creating spans and propagating them across arbitrary transports.
 
-This SDK provides a `WavefrontTracer` for creating spans and sending them to Wavefront. The steps for creating a `WavefrontTracer` are:
+This SDK provides a `WavefrontTracer` for creating spans and sending them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) from your spans. The 
+steps for creating a `WavefrontTracer` are:
 1. Create an `ApplicationTags` instance, which specifies metadata about your application.
 2. Create a `WavefrontSender` for sending trace data to Wavefront.
 3. Create a `WavefrontSpanReporter` for reporting trace data to Wavefront.
@@ -103,9 +104,12 @@ To create a `WavefrontTracer`, you pass the `ApplicationTags` and `Reporter` ins
 ApplicationTags appTags = buildTags(); // pseudocode; see above
 Reporter wfSpanReporter = buildReporter();  // pseudocode; see above
 WavefrontTracer.Builder wfTracerBuilder = new WavefrontTracer.Builder(wfSpanReporter, appTags);
-// Optionally add multi-valued span tags before building
+// Optionally configure sampling and add multi-valued span tags before building
 Tracer tracer = wfTracerBuilder.build();
 ```
+
+#### Sampling (Optional)
+You can optionally apply one or multiple sampling strategies to the `WavefrontTracer`. See the [sampling documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/sampling.md) for details.
 
 #### Multi-valued Span Tags (Optional)
 You can optionally add metadata to OpenTracing spans in the form of multi-valued tags. The `WavefrontTracer` builder supports different methods to add those tags.
@@ -142,3 +146,5 @@ See the [context propagation documentation](https://github.com/wavefrontHQ/wavef
 [maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=604800
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
 
+## RED Metrics
+See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) for details on the out-of-the-box metrics and histograms that are provided.
