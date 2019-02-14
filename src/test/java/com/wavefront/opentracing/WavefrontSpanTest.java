@@ -124,6 +124,7 @@ public class WavefrontSpanTest {
       put("service", "myService");
       put("cluster", "none");
       put("shard", "none");
+      put("component", "none");
       put("operationName", operationName);
     }};
   }
