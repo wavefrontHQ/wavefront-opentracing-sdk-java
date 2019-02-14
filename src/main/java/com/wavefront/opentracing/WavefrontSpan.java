@@ -16,6 +16,9 @@ import javax.annotation.concurrent.ThreadSafe;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 
+import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+
 /**
  * Represents a thread-safe Wavefront trace span based on OpenTracing's {@link Span}.
  *
@@ -37,6 +40,9 @@ public class WavefrontSpan implements Span {
   private Boolean forceSampling = null;
   private boolean finished = false;
   private boolean isError = false;
+
+  // Store it as a member variable so that we can efficiently retrieve the component tag.
+  private String componentTagValue = NULL_TAG_VAL;
 
   WavefrontSpan(WavefrontTracer tracer, String operationName, WavefrontSpanContext spanContext,
                 long startTimeMicros, long startTimeNanos, List<Reference> parents,
@@ -80,6 +86,10 @@ public class WavefrontSpan implements Span {
   private synchronized WavefrontSpan setTagObject(String key, Object value) {
     if (key != null && !key.isEmpty() && value != null) {
       tags.add(Pair.of(key, value.toString()));
+
+      if (key.equals(COMPONENT_TAG_KEY)) {
+        componentTagValue = value.toString();
+      }
 
       // allow span to be reported if sampling.priority is > 0.
       if (Tags.SAMPLING_PRIORITY.getKey().equals(key) && value instanceof Number) {
@@ -244,6 +254,10 @@ public class WavefrontSpan implements Span {
       return Collections.emptyList();
     }
     return Collections.unmodifiableList(follows);
+  }
+
+  public String getComponentTagValue() {
+    return componentTagValue;
   }
 
   @Override
