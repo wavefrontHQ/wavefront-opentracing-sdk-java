@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware OpenTracing SDK for Java 0.9.3 GA
+Wavefront by VMware OpenTracing SDK for Java 1.0 GA
 
 ======================================================================
 
@@ -200,8 +200,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-
-
 >>> io.dropwizard.metrics5:metrics-core-5.0.0-rc2
 
 License: Apache 2.0
@@ -335,9 +333,7 @@ Released under the Creative Commons Attribution License
 Official home: http://www.jcip.net
 
 
-
 =============== APPENDIX. Standard License Files ============== 
-
 
 
 --------------- SECTION 1: Apache License, V2.0 -----------
@@ -517,8 +513,6 @@ warranty or additional liability.
 
 END OF TERMS AND CONDITIONS 
 
-
-
 --------------- SECTION 2: Creative Commons Attribution 2.5  -----------
 
 CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM ITS USE.
@@ -602,4 +596,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVAGANT011619]
+[WAVEFRONTOPENTRACINGSDKJAVA10GANT021519]
