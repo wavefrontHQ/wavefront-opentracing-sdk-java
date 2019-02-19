@@ -48,7 +48,7 @@ public class WavefrontSpanTest {
     expectLastCall().atLeastOnce();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.root.myApplication.myService.dummyOp.invocation.count"),
+        "tracing.derived.root.myApplication.myService.dummyOp.requests.count"),
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
           put("application", "myApplication");
           put("service", "myService");
@@ -99,7 +99,7 @@ public class WavefrontSpanTest {
     expectLastCall().atLeastOnce();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.root.myApplication.myService.dummyOp.invocation.count"),
+        "tracing.derived.root.myApplication.myService.dummyOp.requests.count"),
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
           put("application", "myApplication");
           put("service", "myService");
@@ -115,7 +115,7 @@ public class WavefrontSpanTest {
     expectLastCall().atLeastOnce();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.root.myApplication.myService.dummyOp.error.count"),
+        "tracing.derived.root.myApplication.myService.dummyOp.errors.count"),
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
           put("application", "myApplication");
           put("service", "myService");

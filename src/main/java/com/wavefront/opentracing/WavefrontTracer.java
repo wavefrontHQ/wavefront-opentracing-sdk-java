@@ -79,7 +79,11 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String JAVA_COMPONENT = "java";
   private final static String DERIVED_METRIC_PREFIX = "tracing.derived";
   private final static String INVOCATION_SUFFIX = ".invocation";
+  // To differentiate between span and trace derived metrics
+  private final static String REQUESTS_SUFFIX = ".requests";
   private final static String ERROR_SUFFIX = ".error";
+  // To differentiate between span and trace derived metrics
+  private final static String ERRORS_SUFFIX = ".errors";
   private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
   private final static String DURATION_SUFFIX = ".duration.micros";
   private final static String OPERATION_NAME_TAG = "operationName";
@@ -278,7 +282,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     wfInternalReporter.newCounter(new MetricName(sanitize(ROOT_TAG + "." +
-        applicationServicePrefix + rootSpan.getOperationName() + INVOCATION_SUFFIX),
+        applicationServicePrefix + rootSpan.getOperationName() + REQUESTS_SUFFIX),
         new HashMap<String, String>() {{
           put(ROOT_TAG, rootSpan.getOperationName());
     }})).inc();
@@ -315,7 +319,7 @@ public class WavefrontTracer implements Tracer, Closeable {
           true)) {
         for (String root: traceInfo.getRoots()) {
           wfInternalReporter.newCounter(new MetricName(sanitize(ROOT_TAG + "." +
-              applicationServicePrefix + root + ERROR_SUFFIX), new HashMap<String, String>() {{
+              applicationServicePrefix + root + ERRORS_SUFFIX), new HashMap<String, String>() {{
             put(ROOT_TAG, root);
           }})).inc();
         }
