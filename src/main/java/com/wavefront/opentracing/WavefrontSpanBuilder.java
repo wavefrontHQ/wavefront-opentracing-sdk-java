@@ -139,8 +139,10 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
       boolean decision = tracer.sample(operationName, ctx.getTraceId().getLeastSignificantBits(), 0);
       ctx = ctx.withSamplingDecision(decision);
     }
-    return new WavefrontSpan(tracer, operationName, ctx, startTimeMicros, startTimeNanos, parents,
-        follows, tags);
+    WavefrontSpan wavefrontSpan = new WavefrontSpan(tracer, operationName, ctx, startTimeMicros,
+        startTimeNanos, parents, follows, tags);
+    tracer.startSpan(wavefrontSpan);
+    return wavefrontSpan;
   }
 
   private WavefrontSpanContext createSpanContext() {

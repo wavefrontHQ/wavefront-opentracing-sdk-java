@@ -47,6 +47,17 @@ public class WavefrontSpanTest {
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
+    wfSender.sendMetric(eq(
+        "tracing.derived.root.myApplication.myService.dummyOp.invocation.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
+          put("application", "myApplication");
+          put("service", "myService");
+          put("cluster", "none");
+          put("shard", "none");
+          put("root", operationName);
+        }}));
+    expectLastCall().atLeastOnce();
+
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
     // advance minute bin and change the below call to expectLastCall().atLeastOnce();
     wfSender.sendDistribution(eq(
@@ -88,8 +99,30 @@ public class WavefrontSpanTest {
     expectLastCall().atLeastOnce();
 
     wfSender.sendMetric(eq(
+        "tracing.derived.root.myApplication.myService.dummyOp.invocation.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
+          put("application", "myApplication");
+          put("service", "myService");
+          put("cluster", "none");
+          put("shard", "none");
+          put("root", operationName);
+        }}));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendMetric(eq(
         "tracing.derived.myApplication.myService.dummyOp.error.count"),
         eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendMetric(eq(
+        "tracing.derived.root.myApplication.myService.dummyOp.error.count"),
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(new HashMap<String, String>() {{
+          put("application", "myApplication");
+          put("service", "myService");
+          put("cluster", "none");
+          put("shard", "none");
+          put("root", operationName);
+        }}));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to

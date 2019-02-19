@@ -7,9 +7,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -33,6 +35,7 @@ public class WavefrontSpan implements Span {
   private final List<Pair<String, String>> tags;
   private final List<Reference> parents;
   private final List<Reference> follows;
+  private final UUID traceId;
 
   private String operationName;
   private long durationMicroseconds;
@@ -50,6 +53,7 @@ public class WavefrontSpan implements Span {
     this.tracer = tracer;
     this.operationName = operationName;
     this.spanContext = spanContext;
+    this.traceId = spanContext.getTraceId();
     this.startTimeMicros = startTimeMicros;
     this.startTimeNanos = startTimeNanos;
     this.parents = parents;
@@ -242,6 +246,7 @@ public class WavefrontSpan implements Span {
     );
   }
 
+  @Nonnull
   public List<Reference> getParents() {
     if (parents == null) {
       return Collections.emptyList();
@@ -249,6 +254,7 @@ public class WavefrontSpan implements Span {
     return Collections.unmodifiableList(parents);
   }
 
+  @Nonnull
   public List<Reference> getFollows() {
     if (follows == null) {
       return Collections.emptyList();
@@ -258,6 +264,10 @@ public class WavefrontSpan implements Span {
 
   public String getComponentTagValue() {
     return componentTagValue;
+  }
+
+  public String getTraceIdStr() {
+    return traceId.toString();
   }
 
   @Override
