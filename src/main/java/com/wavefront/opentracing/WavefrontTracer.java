@@ -74,17 +74,15 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String OPERATION_NAME_TAG = "operationName";
   private final String applicationServicePrefix;
 
-  private WavefrontTracer(Reporter reporter, List<Pair<String, String>> tags,
-                          ApplicationTags applicationTags, List<Sampler> samplers,
-                          Supplier<Long> reportFrequencyMillis, boolean includeJvmMetrics) {
-    scopeManager = new ThreadLocalScopeManager();
+  private WavefrontTracer(Builder builder) {
+    scopeManager = builder.scopeManager;
     registry = new PropagatorRegistry();
-    this.reporter = reporter;
-    this.tags = tags;
-    this.samplers = samplers;
-    applicationServicePrefix = applicationTags.getApplication() + "." +
-        applicationTags.getService() + ".";
-    this.reportFrequencyMillis = reportFrequencyMillis;
+    this.reporter = builder.reporter;
+    this.tags = builder.tags;
+    this.samplers = builder.samplers;
+    applicationServicePrefix = builder.applicationTags.getApplication() + "." +
+        builder.applicationTags.getService() + ".";
+    this.reportFrequencyMillis = builder.reportingFrequencyMillis;
 
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
@@ -92,8 +90,8 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     WavefrontSpanReporter wfSpanReporter = getWavefrontSpanReporter(reporter);
     if (wfSpanReporter != null) {
-      Tuple tuple = instantiateWavefrontStatsReporter(wfSpanReporter, applicationTags,
-          includeJvmMetrics);
+      Tuple tuple = instantiateWavefrontStatsReporter(wfSpanReporter, builder.applicationTags,
+          builder.includeJvmMetrics);
       wfInternalReporter = tuple.wfInternalReporter;
       wfJvmReporter = tuple.wfJvmReporter;
       heartbeaterService = tuple.heartbeaterService;
@@ -287,6 +285,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     // tags can be repeated and include high-cardinality tags
     private final List<Pair<String, String>> tags;
     private final Reporter reporter;
+    private ScopeManager scopeManager = new ThreadLocalScopeManager();
     // application metadata, will not have repeated tags and will be low cardinality tags
     private final ApplicationTags applicationTags;
     private final List<Sampler> samplers;
@@ -378,6 +377,17 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
+     * Scope manager to use for span management.
+     *
+     * @param scopeManager
+     * @return {@code this}
+     */
+    public Builder withScopeManager(ScopeManager scopeManager) {
+      this.scopeManager = scopeManager;
+      return this;
+    }
+
+    /**
      * Invoke this method if you already are publishing JVM metrics from your app to Wavefront.
      *
      * @return {@code this}
@@ -405,8 +415,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public WavefrontTracer build() {
       applyApplicationTags();
-      return new WavefrontTracer(reporter, tags, applicationTags, samplers,
-          reportingFrequencyMillis, includeJvmMetrics);
+      return new WavefrontTracer(this);
     }
   }
 
