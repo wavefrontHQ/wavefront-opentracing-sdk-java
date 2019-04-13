@@ -156,8 +156,6 @@ public class WavefrontSpan implements Span {
     return this;
   }
 
-
-
   @Override
   public synchronized WavefrontSpan setBaggageItem(String key, String value) {
     spanContext = spanContext.withBaggageItem(key, value);
