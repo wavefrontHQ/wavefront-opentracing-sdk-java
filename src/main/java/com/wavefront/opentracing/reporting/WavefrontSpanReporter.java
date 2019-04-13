@@ -89,7 +89,7 @@ public class WavefrontSpanReporter implements Reporter {
 
       wavefrontSender.sendSpan(span.getOperationName(), span.getStartTimeMicros() / 1000,
           span.getDurationMicroseconds() / 1000, source, ctx.getTraceId(), ctx.getSpanId(),
-          parents, follows, span.getTagsAsList(), null);
+          parents, follows, span.getTagsAsList(), span.getSpanLogs());
     } catch (IOException e) {
       if (logger.isLoggable(Level.FINER)) {
         logger.finer("Dropping span: " + span);

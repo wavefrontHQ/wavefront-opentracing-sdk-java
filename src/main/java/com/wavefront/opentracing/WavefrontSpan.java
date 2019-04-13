@@ -1,6 +1,7 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.entities.tracing.SpanLog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,10 +15,12 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import io.opentracing.Span;
+import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 
 import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Represents a thread-safe Wavefront trace span based on OpenTracing's {@link Span}.
@@ -33,6 +36,7 @@ public class WavefrontSpan implements Span {
   private final List<Pair<String, String>> tags;
   private final List<Reference> parents;
   private final List<Reference> follows;
+  private final List<SpanLog> spanLogs;
 
   private String operationName;
   private long durationMicroseconds;
@@ -61,6 +65,7 @@ public class WavefrontSpan implements Span {
         setTagObject(tag._1, tag._2);
       }
     }
+    this.spanLogs = new ArrayList<>();
   }
 
   @Override
@@ -119,27 +124,39 @@ public class WavefrontSpan implements Span {
 
   @Override
   public WavefrontSpan log(Map<String, ?> map) {
-    // no-op
+    updateSpanLogsInternal(getCurrentTimeMicros(), map);
     return this;
   }
 
   @Override
-  public WavefrontSpan log(long l, Map<String, ?> map) {
-    // no-op
+  public synchronized WavefrontSpan log(long currentTimeMicros, Map<String, ?> map) {
+    updateSpanLogsInternal(currentTimeMicros, map);
     return this;
   }
 
   @Override
   public WavefrontSpan log(String s) {
-    // no-op
+    updateSpanLogsInternal(getCurrentTimeMicros(), Collections.singletonMap(Fields.EVENT, s));
     return this;
   }
 
   @Override
-  public WavefrontSpan log(long l, String s) {
-    // no-op
+  public WavefrontSpan log(long currentTimeMicros, String s) {
+    updateSpanLogsInternal(currentTimeMicros, Collections.singletonMap(Fields.EVENT, s));
     return this;
   }
+
+  private synchronized WavefrontSpan updateSpanLogsInternal(
+      long currentTimeMicros, Map<String, ?> fields) {
+    if (fields != null) {
+      Map<String, String> finalFields = fields.entrySet().stream().collect(
+          toMap(Map.Entry::getKey, value -> value.toString()));
+      spanLogs.add(new SpanLog(currentTimeMicros, finalFields));
+    }
+    return this;
+  }
+
+
 
   @Override
   public synchronized WavefrontSpan setBaggageItem(String key, String value) {
@@ -242,6 +259,10 @@ public class WavefrontSpan implements Span {
     );
   }
 
+  public List<SpanLog> getSpanLogs() {
+    return Collections.unmodifiableList(spanLogs);
+  }
+
   public List<Reference> getParents() {
     if (parents == null) {
       return Collections.emptyList();
@@ -271,5 +292,12 @@ public class WavefrontSpan implements Span {
         ", parents=" + parents +
         ", follows=" + follows +
         '}';
+  }
+
+  /**
+   * Provides current system time in micros.
+   */
+  private long getCurrentTimeMicros() {
+    return System.currentTimeMillis() * 1000;
   }
 }

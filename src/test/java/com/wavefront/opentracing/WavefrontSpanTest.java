@@ -39,7 +39,7 @@ public class WavefrontSpanTest {
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
-        anyObject(), eq(null));
+        anyObject(), eq(Collections.emptyList()));
     expectLastCall();
 
     wfSender.sendMetric(eq(
@@ -79,7 +79,7 @@ public class WavefrontSpanTest {
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
-        anyObject(), eq(null));
+        anyObject(), eq(Collections.emptyList()));
     expectLastCall();
 
     wfSender.sendMetric(eq(
