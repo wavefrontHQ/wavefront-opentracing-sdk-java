@@ -1,9 +1,3 @@
 dist: xenial
 language: java
-jdk:
-  - oraclejdk9
-
-addons:
-  apt:
-    packages:
-      - oracle-java9-installer
+jdk: openjdk8
