@@ -428,6 +428,9 @@ public class WavefrontTracer implements Tracer, Closeable {
   @Override
   public void close() throws IOException {
     this.reporter.close();
+    if (wfInternalReporter != null) {
+      wfInternalReporter.stop();
+    }
     if (wfDerivedReporter != null) {
       wfDerivedReporter.stop();
     }
