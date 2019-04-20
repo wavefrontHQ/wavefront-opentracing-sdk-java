@@ -35,6 +35,7 @@ public class WavefrontSpan implements Span {
   private final List<Pair<String, String>> tags;
   private final List<Reference> parents;
   private final List<Reference> follows;
+  @Nullable
   private final Counter spansDiscarded;
 
   private String operationName;
@@ -201,7 +202,7 @@ public class WavefrontSpan implements Span {
     // only report spans if the sampling decision allows it
     if (spanContext.isSampled() && spanContext.getSamplingDecision()) {
       tracer.reportSpan(this);
-    } else if (tracer.getWfInternalReporter() != null) {
+    } else if (spansDiscarded != null) {
       spansDiscarded.inc();
     }
     // irrespective of sampling, report wavefront-generated metrics/histograms to Wavefront

@@ -157,7 +157,9 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
       }
       if (loggingAllowed()) {
         logger.warning("Buffer full, dropping span: " + span);
-        logger.warning("Total spans dropped: " + spansDropped.getCount());
+        if (metricsReporter != null) {
+          logger.warning("Total spans dropped: " + spansDropped.getCount());
+        }
       }
     }
   }
