@@ -1,5 +1,7 @@
 package com.wavefront.opentracing;
 
+import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
+import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.sdk.common.Pair;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class WavefrontSpan implements Span {
   private final List<Pair<String, String>> tags;
   private final List<Reference> parents;
   private final List<Reference> follows;
+  private final Counter spansDiscarded;
 
   private String operationName;
   private long durationMicroseconds;
@@ -54,6 +57,10 @@ public class WavefrontSpan implements Span {
     this.startTimeNanos = startTimeNanos;
     this.parents = parents;
     this.follows = follows;
+
+    spansDiscarded = tracer.getWfInternalReporter() == null ? null :
+        tracer.getWfInternalReporter().newCounter(
+            new MetricName("spans.discarded", Collections.emptyMap()));
 
     this.tags = (tags == null || tags.isEmpty()) ? null : new ArrayList<>();
     if (tags != null) {
@@ -194,6 +201,8 @@ public class WavefrontSpan implements Span {
     // only report spans if the sampling decision allows it
     if (spanContext.isSampled() && spanContext.getSamplingDecision()) {
       tracer.reportSpan(this);
+    } else if (tracer.getWfInternalReporter() != null) {
+      spansDiscarded.inc();
     }
     // irrespective of sampling, report wavefront-generated metrics/histograms to Wavefront
     tracer.reportWavefrontGeneratedData(this);

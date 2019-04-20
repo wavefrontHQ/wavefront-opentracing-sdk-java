@@ -37,6 +37,10 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
   private final Random random;
   private final float logPercent;
 
+  /**
+   * Users create a WavefrontSpanReporter and provide it to the tracer, which upon initialization
+   * sets this internal metrics reporter. Though unlikely, marked as volatile for thread safety.
+   */
   private volatile WavefrontInternalReporter metricsReporter;
   private Counter spansDropped;
   private Counter spansReceived;
@@ -77,8 +81,12 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
      *
      * @param maxQueueSize Max queue size of in-memory buffer
      * @return {@code this}
+     * @throws IllegalArgumentException if the queue size is not greater than 0
      */
     public Builder withMaxQueueSize(int maxQueueSize) {
+      if (maxQueueSize <= 0) {
+        throw new IllegalArgumentException("invalid max queue size");
+      }
       this.maxQueueSize = maxQueueSize;
       return this;
     }
@@ -88,8 +96,12 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
      *
      * @param percent a value between 0.0 and 1.0
      * @return {@code this}
+     * @throws IllegalArgumentException if the percent is not between 0.0 and 1.0
      */
     public Builder withLoggingPercent(float percent) {
+      if (percent < 0.0 || percent > 1.0) {
+        throw new IllegalArgumentException("invalid logging percent");
+      }
       logPercent = percent;
       return this;
     }
@@ -143,7 +155,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
       if (metricsReporter != null) {
         spansDropped.inc();
       }
-      if (isLoggable()) {
+      if (loggingAllowed()) {
         logger.warning("Buffer full, dropping span: " + span);
         logger.warning("Total spans dropped: " + spansDropped.getCount());
       }
@@ -170,7 +182,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
           span.getDurationMicroseconds() / 1000, source, ctx.getTraceId(), ctx.getSpanId(),
           parents, follows, span.getTagsAsList(), null);
     } catch (IOException e) {
-      if (isLoggable()) {
+      if (loggingAllowed()) {
         logger.log(Level.WARNING, "error reporting span: " + span, e);
       }
       if (metricsReporter != null) {
@@ -180,7 +192,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
     }
   }
 
-  private boolean isLoggable() {
+  private boolean loggingAllowed() {
     return random.nextFloat() <= logPercent;
   }
 

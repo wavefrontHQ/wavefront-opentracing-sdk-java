@@ -57,6 +57,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final Reporter reporter;
   private final List<Pair<String, String>> tags;
   private final List<Sampler> samplers;
+
   @Nullable
   private final WavefrontInternalReporter wfInternalReporter;
   @Nullable
@@ -176,6 +177,11 @@ public class WavefrontTracer implements Tracer, Closeable {
             Arrays.asList(WAVEFRONT_GENERATED_COMPONENT, OPENTRACING_COMPONENT, JAVA_COMPONENT),
         wfSpanReporter.getSource());
     return new Tuple(wfInternalReporter, wfDerivedReporter, wfJvmReporter, heartbeaterService);
+  }
+
+  @Nullable
+  WavefrontInternalReporter getWfInternalReporter() {
+    return wfInternalReporter;
   }
 
   @Override
