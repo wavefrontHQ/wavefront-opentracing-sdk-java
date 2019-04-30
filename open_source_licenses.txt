@@ -1,6 +1,6 @@
-open_source_licenses.txt
+﻿open_source_license.txt
 
-Wavefront by VMware OpenTracing SDK for Java 1.0 GA
+Wavefront by VMware OpenTracing SDK for Java 1.1 GA
 
 ======================================================================
 
@@ -333,7 +333,9 @@ Released under the Creative Commons Attribution License
 Official home: http://www.jcip.net
 
 
+
 =============== APPENDIX. Standard License Files ============== 
+
 
 
 --------------- SECTION 1: Apache License, V2.0 -----------
@@ -513,6 +515,8 @@ warranty or additional liability.
 
 END OF TERMS AND CONDITIONS 
 
+
+
 --------------- SECTION 2: Creative Commons Attribution 2.5  -----------
 
 CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM ITS USE.
@@ -576,7 +580,6 @@ UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS T
     If any provision of this License is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this License, and without further action by the parties to this agreement, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
     No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
     This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
-	
 
 ======================================================================
 
@@ -596,4 +599,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVA10GANT021519]
+[WAVEFRONTOPENTRACINGSDKJAVA11GAAB043019]
