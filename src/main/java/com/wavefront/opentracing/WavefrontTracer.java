@@ -79,7 +79,7 @@ public class WavefrontTracer implements Tracer, Closeable {
 
   private WavefrontTracer(Builder builder) {
     scopeManager = builder.scopeManager;
-    registry = new PropagatorRegistry();
+    this.registry = builder.registry;
     this.reporter = builder.reporter;
     this.tags = builder.tags;
     this.samplers = builder.samplers;
@@ -315,6 +315,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     // Default to 1min
     private Supplier<Long> reportingFrequencyMillis = () -> 60000L;
     private boolean includeJvmMetrics = true;
+    private final PropagatorRegistry registry = new PropagatorRegistry();
 
     /**
      * Constructor.
@@ -417,6 +418,19 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public Builder excludeJvmMetrics() {
       includeJvmMetrics = false;
+      return this;
+    }
+
+    /**
+     * Register custom propogator to support various formats
+     * @param format
+     * @param propagator
+     * @param <T>
+     * @return
+     */
+
+    public <T> WavefrontTracer.Builder registerPropogator(Format<T> format, Propagator<T> propagator) {
+      this.registry.register(format, propagator);
       return this;
     }
 
