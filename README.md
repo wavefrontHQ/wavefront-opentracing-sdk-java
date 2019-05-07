@@ -148,3 +148,6 @@ See the [context propagation documentation](https://github.com/wavefrontHQ/wavef
 
 ## RED Metrics
 See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) for details on the out-of-the-box metrics and histograms that are provided.
+
+## Monitoring the SDK
+See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that this SDK collects and reports to Wavefront.
