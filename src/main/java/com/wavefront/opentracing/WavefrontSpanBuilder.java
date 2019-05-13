@@ -166,7 +166,8 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
    * @return the map containing baggage items from all references
    */
   @Nullable
-  private Map<String, String> addItems(List<Reference> references, Map<String, String> baggage) {
+  private Map<String, String> addItems(List<Reference> references,
+                                       @Nullable Map<String, String> baggage) {
     if (references != null && !references.isEmpty()) {
       for (Reference ref : references) {
         Map<String, String> refBaggage = ref.getSpanContext().getBaggage();
