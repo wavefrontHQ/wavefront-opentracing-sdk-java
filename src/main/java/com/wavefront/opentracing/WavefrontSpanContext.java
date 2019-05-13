@@ -50,6 +50,11 @@ public class WavefrontSpanContext implements SpanContext {
     return new WavefrontSpanContext(traceId, spanId, items, samplingDecision);
   }
 
+  Map<String, String> getBaggage() {
+    // protected method for internal use. don't wrap within unmodifiable for memory efficiency.
+    return baggage;
+  }
+
   WavefrontSpanContext withSamplingDecision(boolean decision) {
     return new WavefrontSpanContext(traceId, spanId, baggage, Boolean.valueOf(decision));
   }
