@@ -67,6 +67,9 @@ public class WavefrontTracer implements Tracer, Closeable {
   @Nullable
   private final WavefrontJvmReporter wfJvmReporter;
   private final Supplier<Long> reportFrequencyMillis;
+  private final String applicationName;
+  private final String serviceName;
+
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
   private final static String JAVA_COMPONENT = "java";
@@ -75,7 +78,6 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
   private final static String DURATION_SUFFIX = ".duration.micros";
   private final static String OPERATION_NAME_TAG = "operationName";
-  private final String applicationServicePrefix;
 
   private WavefrontTracer(Builder builder) {
     scopeManager = builder.scopeManager;
@@ -83,8 +85,8 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.reporter = builder.reporter;
     this.tags = builder.tags;
     this.samplers = builder.samplers;
-    applicationServicePrefix = builder.applicationTags.getApplication() + "." +
-        builder.applicationTags.getService() + ".";
+    applicationName = builder.applicationTags.getApplication();
+    serviceName = builder.applicationTags.getService();
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
 
     /**
@@ -251,6 +253,11 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(OPERATION_NAME_TAG, span.getOperationName());
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
+    String application = span.getSingleValuedTagValue(APPLICATION_TAG_KEY);
+    String service = span.getSingleValuedTagValue(SERVICE_TAG_KEY);
+    String applicationServicePrefix =
+        (application == null ? applicationName : application) + "." + (service == null ?
+            serviceName : service) + ".";
     wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
         span.getOperationName() + INVOCATION_SUFFIX), pointTags)).inc();
     if (span.isError()) {

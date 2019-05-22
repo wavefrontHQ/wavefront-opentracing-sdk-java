@@ -2,13 +2,18 @@ package com.wavefront.opentracing;
 
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
+import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -33,6 +38,7 @@ public class WavefrontSpan implements Span {
   private final long startTimeMicros;
   private final long startTimeNanos;
   private final List<Pair<String, String>> tags;
+  private final Map<String, Pair<String, String>> singleValuedTags;
   private final List<Reference> parents;
   private final List<Reference> follows;
   @Nullable
@@ -48,9 +54,14 @@ public class WavefrontSpan implements Span {
   // Store it as a member variable so that we can efficiently retrieve the component tag.
   private String componentTagValue = NULL_TAG_VAL;
 
+  private static Set<String> SINGLE_VALUED_TAG_KEYS = new HashSet<>(Arrays.asList(
+      Constants.APPLICATION_TAG_KEY, Constants.SERVICE_TAG_KEY, Constants.CLUSTER_TAG_KEY,
+      Constants.SHARD_TAG_KEY));
+
   WavefrontSpan(WavefrontTracer tracer, String operationName, WavefrontSpanContext spanContext,
                 long startTimeMicros, long startTimeNanos, List<Reference> parents,
-                List<Reference> follows, List<Pair<String, String>> tags) {
+                List<Reference> follows, List<Pair<String, String>> tags,
+                List<Pair<String, String>> globalTags) {
     this.tracer = tracer;
     this.operationName = operationName;
     this.spanContext = spanContext;
@@ -63,7 +74,14 @@ public class WavefrontSpan implements Span {
         tracer.getWfInternalReporter().newCounter(
             new MetricName("spans.discarded", Collections.emptyMap()));
 
-    this.tags = (tags == null || tags.isEmpty()) ? null : new ArrayList<>();
+    this.tags = (globalTags == null || globalTags.isEmpty()) && (tags == null || tags.isEmpty()) ?
+      null : new ArrayList<>();
+    this.singleValuedTags = new HashMap<>();
+    if (globalTags != null) {
+      for (Pair<String, String> tag : globalTags) {
+        setTagObject(tag._1, tag._2);
+      }
+    }
     if (tags != null) {
       for (Pair<String, String> tag : tags) {
         setTagObject(tag._1, tag._2);
@@ -93,7 +111,17 @@ public class WavefrontSpan implements Span {
 
   private synchronized WavefrontSpan setTagObject(String key, Object value) {
     if (key != null && !key.isEmpty() && value != null) {
-      tags.add(Pair.of(key, value.toString()));
+      Pair<String, String> tag = Pair.of(key, value.toString());
+
+      // if tag should be single-valued, replace the previous value if it exists
+      if (isSingleValuedTagKey(key)) {
+        if (singleValuedTags.containsKey(key)) {
+          tags.remove(singleValuedTags.get(key));
+        }
+        singleValuedTags.put(key, tag);
+      }
+
+      tags.add(tag);
 
       if (key.equals(COMPONENT_TAG_KEY)) {
         componentTagValue = value.toString();
@@ -121,7 +149,7 @@ public class WavefrontSpan implements Span {
     return this;
   }
 
-  public boolean isError () {
+  public boolean isError() {
     return isError;
   }
 
@@ -252,6 +280,19 @@ public class WavefrontSpan implements Span {
     );
   }
 
+  /**
+   * Returns the tag value for the given single-valued tag key. Returns null if no such tag exists.
+   *
+   * @param key The single-valued tag key.
+   * @return The tag value.
+   */
+  public synchronized String getSingleValuedTagValue(String key) {
+    if (singleValuedTags.containsKey(key)) {
+      return singleValuedTags.get(key)._2;
+    }
+    return null;
+  }
+
   public List<Reference> getParents() {
     if (parents == null) {
       return Collections.emptyList();
@@ -281,5 +322,15 @@ public class WavefrontSpan implements Span {
         ", parents=" + parents +
         ", follows=" + follows +
         '}';
+  }
+
+  /**
+   * Returns a boolean indicated whether the given tag key must be single-valued or not.
+   *
+   * @param key The tag key.
+   * @return true if the key must be single-valued, false otherwise.
+   */
+  public static boolean isSingleValuedTagKey(String key) {
+    return SINGLE_VALUED_TAG_KEYS.contains(key);
   }
 }
