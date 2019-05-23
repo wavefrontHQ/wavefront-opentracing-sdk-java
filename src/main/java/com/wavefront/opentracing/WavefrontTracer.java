@@ -67,8 +67,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   @Nullable
   private final WavefrontJvmReporter wfJvmReporter;
   private final Supplier<Long> reportFrequencyMillis;
-  private final String applicationName;
-  private final String serviceName;
+  private final ApplicationTags applicationTags;
 
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
@@ -85,8 +84,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.reporter = builder.reporter;
     this.tags = builder.tags;
     this.samplers = builder.samplers;
-    applicationName = builder.applicationTags.getApplication();
-    serviceName = builder.applicationTags.getService();
+    this.applicationTags = builder.applicationTags;
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
 
     /**
@@ -253,26 +251,42 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(OPERATION_NAME_TAG, span.getOperationName());
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
+
     String application = span.getSingleValuedTagValue(APPLICATION_TAG_KEY);
+    if (application == null) {
+      application = applicationTags.getApplication();
+    } else if (!application.equals(applicationTags.getApplication())) {
+      pointTags.put(APPLICATION_TAG_KEY, application);
+    }
     String service = span.getSingleValuedTagValue(SERVICE_TAG_KEY);
-    String applicationServicePrefix =
-        (application == null ? applicationName : application) + "." + (service == null ?
-            serviceName : service) + ".";
-    wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + INVOCATION_SUFFIX), pointTags)).inc();
+    if (service == null) {
+      service = applicationTags.getService();
+    } else if (!service.equals(applicationTags.getService())) {
+      pointTags.put(SERVICE_TAG_KEY, service);
+    }
+    String cluster = span.getSingleValuedTagValue(CLUSTER_TAG_KEY);
+    if (cluster != null && !cluster.equals(applicationTags.getCluster())) {
+      pointTags.put(CLUSTER_TAG_KEY, cluster);
+    }
+    String shard = span.getSingleValuedTagValue(SHARD_TAG_KEY);
+    if (shard != null && !shard.equals(applicationTags.getShard())) {
+      pointTags.put(SHARD_TAG_KEY, shard);
+    }
+
+    String metricNamePrefix = application + "." + service + "." + span.getOperationName();
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
+        pointTags)).inc();
     if (span.isError()) {
-      wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-          span.getOperationName() + ERROR_SUFFIX), pointTags)).inc();
+      wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + ERROR_SUFFIX),
+          pointTags)).inc();
     }
     long spanDurationMicros = span.getDurationMicroseconds();
     // Convert from micros to millis and add to duration counter
-    wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + TOTAL_TIME_SUFFIX), pointTags)).
-        inc(spanDurationMicros / 1000);
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
+        pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
-    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + DURATION_SUFFIX), pointTags)).
-        update(spanDurationMicros);
+    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
+        pointTags)).update(spanDurationMicros);
   }
 
   private String sanitize(String s) {
