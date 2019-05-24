@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.wavefront</groupId>
             <artifactId>wavefront-runtime-sdk-jvm</artifactId>
-            <version>0.9.2</version>
+            <version>0.9.4</version>
         </dependency>
 
         <!-- Test Dependencies -->
