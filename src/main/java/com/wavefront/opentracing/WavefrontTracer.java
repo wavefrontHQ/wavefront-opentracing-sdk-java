@@ -67,6 +67,8 @@ public class WavefrontTracer implements Tracer, Closeable {
   @Nullable
   private final WavefrontJvmReporter wfJvmReporter;
   private final Supplier<Long> reportFrequencyMillis;
+  private final ApplicationTags applicationTags;
+
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
   private final static String JAVA_COMPONENT = "java";
@@ -75,7 +77,6 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
   private final static String DURATION_SUFFIX = ".duration.micros";
   private final static String OPERATION_NAME_TAG = "operationName";
-  private final String applicationServicePrefix;
 
   private WavefrontTracer(Builder builder) {
     scopeManager = builder.scopeManager;
@@ -83,8 +84,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.reporter = builder.reporter;
     this.tags = builder.tags;
     this.samplers = builder.samplers;
-    applicationServicePrefix = builder.applicationTags.getApplication() + "." +
-        builder.applicationTags.getService() + ".";
+    this.applicationTags = builder.applicationTags;
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
 
     /**
@@ -251,21 +251,41 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(OPERATION_NAME_TAG, span.getOperationName());
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
-    wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + INVOCATION_SUFFIX), pointTags)).inc();
+
+    String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
+        applicationTags.getApplication());
+    String service = overrideWithSingleValuedSpanTag(span, pointTags, SERVICE_TAG_KEY,
+        applicationTags.getService());
+    overrideWithSingleValuedSpanTag(span, pointTags, CLUSTER_TAG_KEY, applicationTags.getCluster());
+    overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
+
+    String metricNamePrefix = application + "." + service + "." + span.getOperationName();
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
+        pointTags)).inc();
     if (span.isError()) {
-      wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-          span.getOperationName() + ERROR_SUFFIX), pointTags)).inc();
+      wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + ERROR_SUFFIX),
+          pointTags)).inc();
     }
     long spanDurationMicros = span.getDurationMicroseconds();
     // Convert from micros to millis and add to duration counter
-    wfDerivedReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + TOTAL_TIME_SUFFIX), pointTags)).
-        inc(spanDurationMicros / 1000);
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
+        pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
-    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + DURATION_SUFFIX), pointTags)).
-        update(spanDurationMicros);
+    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
+        pointTags)).update(spanDurationMicros);
+  }
+
+  private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
+                                                 String key, String defaultValue) {
+    String spanTagValue = span.getSingleValuedTagValue(key);
+    if (spanTagValue == null) {
+      return defaultValue;
+    }
+    // If span tag value is different from the default, we need to override the point tag
+    if (!spanTagValue.equals(defaultValue)) {
+      pointTags.put(key, spanTagValue);
+    }
+    return spanTagValue;
   }
 
   private String sanitize(String s) {

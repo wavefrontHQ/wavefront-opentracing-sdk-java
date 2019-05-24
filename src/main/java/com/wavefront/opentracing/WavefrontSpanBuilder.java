@@ -130,10 +130,6 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
       startTimeMicros = tracer.currentTimeMicros();
       startTimeNanos = System.nanoTime();
     }
-    List<Pair<String, String>> globalTags = tracer.getTags();
-    if (globalTags != null && !globalTags.isEmpty()) {
-      tags.addAll(globalTags);
-    }
     WavefrontSpanContext ctx = createSpanContext();
     if (!ctx.isSampled()) {
       // this indicates a root span and that no decision has been inherited from a parent span.
