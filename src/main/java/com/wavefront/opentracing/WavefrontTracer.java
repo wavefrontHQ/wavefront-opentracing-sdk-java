@@ -252,26 +252,12 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
 
-    String application = span.getSingleValuedTagValue(APPLICATION_TAG_KEY);
-    if (application == null) {
-      application = applicationTags.getApplication();
-    } else if (!application.equals(applicationTags.getApplication())) {
-      pointTags.put(APPLICATION_TAG_KEY, application);
-    }
-    String service = span.getSingleValuedTagValue(SERVICE_TAG_KEY);
-    if (service == null) {
-      service = applicationTags.getService();
-    } else if (!service.equals(applicationTags.getService())) {
-      pointTags.put(SERVICE_TAG_KEY, service);
-    }
-    String cluster = span.getSingleValuedTagValue(CLUSTER_TAG_KEY);
-    if (cluster != null && !cluster.equals(applicationTags.getCluster())) {
-      pointTags.put(CLUSTER_TAG_KEY, cluster);
-    }
-    String shard = span.getSingleValuedTagValue(SHARD_TAG_KEY);
-    if (shard != null && !shard.equals(applicationTags.getShard())) {
-      pointTags.put(SHARD_TAG_KEY, shard);
-    }
+    String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
+        applicationTags.getApplication());
+    String service = overrideWithSingleValuedSpanTag(span, pointTags, SERVICE_TAG_KEY,
+        applicationTags.getService());
+    overrideWithSingleValuedSpanTag(span, pointTags, CLUSTER_TAG_KEY, applicationTags.getCluster());
+    overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
 
     String metricNamePrefix = application + "." + service + "." + span.getOperationName();
     wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
@@ -287,6 +273,19 @@ public class WavefrontTracer implements Tracer, Closeable {
     // Support duration in microseconds instead of milliseconds
     wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
         pointTags)).update(spanDurationMicros);
+  }
+
+  private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
+                                                 String key, String defaultValue) {
+    String spanTagValue = span.getSingleValuedTagValue(key);
+    if (spanTagValue == null) {
+      return defaultValue;
+    }
+    // If span tag value is different from the default, we need to override the point tag
+    if (!spanTagValue.equals(defaultValue)) {
+      pointTags.put(key, spanTagValue);
+    }
+    return spanTagValue;
   }
 
   private String sanitize(String s) {

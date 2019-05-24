@@ -37,13 +37,15 @@ public class WavefrontSpan implements Span {
   private final WavefrontTracer tracer;
   private final long startTimeMicros;
   private final long startTimeNanos;
+  @Nullable
   private final List<Pair<String, String>> tags;
-  private final Map<String, Pair<String, String>> singleValuedTags;
   private final List<Reference> parents;
   private final List<Reference> follows;
   @Nullable
   private final Counter spansDiscarded;
 
+  @Nullable
+  private Map<String, Pair<String, String>> singleValuedTags;
   private String operationName;
   private long durationMicroseconds;
   private WavefrontSpanContext spanContext;
@@ -60,8 +62,7 @@ public class WavefrontSpan implements Span {
 
   WavefrontSpan(WavefrontTracer tracer, String operationName, WavefrontSpanContext spanContext,
                 long startTimeMicros, long startTimeNanos, List<Reference> parents,
-                List<Reference> follows, List<Pair<String, String>> tags,
-                List<Pair<String, String>> globalTags) {
+                List<Reference> follows, List<Pair<String, String>> tags) {
     this.tracer = tracer;
     this.operationName = operationName;
     this.spanContext = spanContext;
@@ -74,9 +75,10 @@ public class WavefrontSpan implements Span {
         tracer.getWfInternalReporter().newCounter(
             new MetricName("spans.discarded", Collections.emptyMap()));
 
+    List<Pair<String, String>> globalTags = tracer.getTags();
     this.tags = (globalTags == null || globalTags.isEmpty()) && (tags == null || tags.isEmpty()) ?
       null : new ArrayList<>();
-    this.singleValuedTags = new HashMap<>();
+    this.singleValuedTags = null;
     if (globalTags != null) {
       for (Pair<String, String> tag : globalTags) {
         setTagObject(tag._1, tag._2);
@@ -115,6 +117,9 @@ public class WavefrontSpan implements Span {
 
       // if tag should be single-valued, replace the previous value if it exists
       if (isSingleValuedTagKey(key)) {
+        if (singleValuedTags == null) {
+          singleValuedTags = new HashMap<>();
+        }
         if (singleValuedTags.containsKey(key)) {
           tags.remove(singleValuedTags.get(key));
         }
@@ -286,11 +291,12 @@ public class WavefrontSpan implements Span {
    * @param key The single-valued tag key.
    * @return The tag value.
    */
+  @Nullable
   public synchronized String getSingleValuedTagValue(String key) {
-    if (singleValuedTags.containsKey(key)) {
-      return singleValuedTags.get(key)._2;
+    if (singleValuedTags == null || !singleValuedTags.containsKey(key)) {
+      return null;
     }
-    return null;
+    return singleValuedTags.get(key)._2;
   }
 
   public List<Reference> getParents() {

@@ -130,7 +130,6 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
       startTimeMicros = tracer.currentTimeMicros();
       startTimeNanos = System.nanoTime();
     }
-    List<Pair<String, String>> globalTags = tracer.getTags();
     WavefrontSpanContext ctx = createSpanContext();
     if (!ctx.isSampled()) {
       // this indicates a root span and that no decision has been inherited from a parent span.
@@ -139,7 +138,7 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
       ctx = ctx.withSamplingDecision(decision);
     }
     return new WavefrontSpan(tracer, operationName, ctx, startTimeMicros, startTimeNanos, parents,
-        follows, tags, globalTags);
+        follows, tags);
   }
 
   private WavefrontSpanContext createSpanContext() {
