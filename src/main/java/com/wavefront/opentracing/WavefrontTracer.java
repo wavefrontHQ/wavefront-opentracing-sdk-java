@@ -442,14 +442,14 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
-     * Register custom propogator to support various formats.
+     * Register custom propagator to support various formats.
      *
      * @param format {@link Format}
      * @param propagator {@link Propagator}
      * @param <T> describes format type
      * @return {@code this}
      */
-    public <T> Builder registerPropogator(Format<T> format, Propagator<T> propagator) {
+    public <T> Builder registerPropagator(Format<T> format, Propagator<T> propagator) {
       this.registry.register(format, propagator);
       return this;
     }
