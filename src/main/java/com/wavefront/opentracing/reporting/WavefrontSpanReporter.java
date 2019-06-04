@@ -2,9 +2,7 @@ package com.wavefront.opentracing.reporting;
 
 import com.wavefront.internal.reporter.WavefrontInternalReporter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
-import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Gauge;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
-import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricRegistry;
 import com.wavefront.opentracing.Reference;
 import com.wavefront.opentracing.WavefrontSpan;
 import com.wavefront.opentracing.WavefrontSpanContext;
