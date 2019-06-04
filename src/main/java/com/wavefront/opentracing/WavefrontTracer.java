@@ -57,13 +57,18 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final Reporter reporter;
   private final List<Pair<String, String>> tags;
   private final List<Sampler> samplers;
+
   @Nullable
   private final WavefrontInternalReporter wfInternalReporter;
+  @Nullable
+  private final WavefrontInternalReporter wfDerivedReporter;
   @Nullable
   private final HeartbeaterService heartbeaterService;
   @Nullable
   private final WavefrontJvmReporter wfJvmReporter;
   private final Supplier<Long> reportFrequencyMillis;
+  private final ApplicationTags applicationTags;
+
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
   private final static String JAVA_COMPONENT = "java";
@@ -72,19 +77,15 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
   private final static String DURATION_SUFFIX = ".duration.micros";
   private final static String OPERATION_NAME_TAG = "operationName";
-  private final String applicationServicePrefix;
 
-  private WavefrontTracer(Reporter reporter, List<Pair<String, String>> tags,
-                          ApplicationTags applicationTags, List<Sampler> samplers,
-                          Supplier<Long> reportFrequencyMillis, boolean includeJvmMetrics) {
-    scopeManager = new ThreadLocalScopeManager();
-    registry = new PropagatorRegistry();
-    this.reporter = reporter;
-    this.tags = tags;
-    this.samplers = samplers;
-    applicationServicePrefix = applicationTags.getApplication() + "." +
-        applicationTags.getService() + ".";
-    this.reportFrequencyMillis = reportFrequencyMillis;
+  private WavefrontTracer(Builder builder) {
+    scopeManager = builder.scopeManager;
+    this.registry = builder.registry;
+    this.reporter = builder.reporter;
+    this.tags = builder.tags;
+    this.samplers = builder.samplers;
+    this.applicationTags = builder.applicationTags;
+    this.reportFrequencyMillis = builder.reportingFrequencyMillis;
 
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
@@ -92,13 +93,16 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     WavefrontSpanReporter wfSpanReporter = getWavefrontSpanReporter(reporter);
     if (wfSpanReporter != null) {
-      Tuple tuple = instantiateWavefrontStatsReporter(wfSpanReporter, applicationTags,
-          includeJvmMetrics);
+      Tuple tuple = instantiateWavefrontStatsReporter(wfSpanReporter, builder.applicationTags,
+          builder.includeJvmMetrics);
       wfInternalReporter = tuple.wfInternalReporter;
+      wfDerivedReporter = tuple.wfDerivedReporter;
       wfJvmReporter = tuple.wfJvmReporter;
       heartbeaterService = tuple.heartbeaterService;
+      wfSpanReporter.setMetricsReporter(wfInternalReporter);
     } else {
       wfInternalReporter = null;
+      wfDerivedReporter = null;
       wfJvmReporter = null;
       heartbeaterService = null;
     }
@@ -125,13 +129,17 @@ public class WavefrontTracer implements Tracer, Closeable {
 
   private class Tuple {
     WavefrontInternalReporter wfInternalReporter;
+    WavefrontInternalReporter wfDerivedReporter;
     @Nullable
     WavefrontJvmReporter wfJvmReporter;
     HeartbeaterService heartbeaterService;
+
     Tuple(WavefrontInternalReporter wfInternalReporter,
+          WavefrontInternalReporter wfDerivedReporter,
           WavefrontJvmReporter wfJvmReporter,
           HeartbeaterService heartbeaterService) {
       this.wfInternalReporter = wfInternalReporter;
+      this.wfDerivedReporter = wfDerivedReporter;
       this.wfJvmReporter = wfJvmReporter;
       this.heartbeaterService = heartbeaterService;
     }
@@ -141,12 +149,20 @@ public class WavefrontTracer implements Tracer, Closeable {
       WavefrontSpanReporter wfSpanReporter, ApplicationTags applicationTags,
       boolean includeJvmMetrics) {
     Map<String, String> pointTags = new HashMap<>(applicationTags.toPointTags());
+
     WavefrontInternalReporter wfInternalReporter = new WavefrontInternalReporter.Builder().
+        prefixedWith("~sdk.java.opentracing").withSource(wfSpanReporter.getSource()).
+        withReporterPointTags(pointTags).
+        build(wfSpanReporter.getWavefrontSender());
+    // Start the internal metrics reporter
+    wfInternalReporter.start(1, TimeUnit.MINUTES);
+
+    WavefrontInternalReporter wfDerivedReporter = new WavefrontInternalReporter.Builder().
         prefixedWith("tracing.derived").withSource(wfSpanReporter.getSource()).
         withReporterPointTags(pointTags).reportMinuteDistribution().
             build(wfSpanReporter.getWavefrontSender());
-    // Start the internal reporter
-    wfInternalReporter.start(reportFrequencyMillis.get(), TimeUnit.MILLISECONDS);
+    // Start the derived metrics reporter
+    wfDerivedReporter.start(reportFrequencyMillis.get(), TimeUnit.MILLISECONDS);
 
     WavefrontJvmReporter wfJvmReporter = null;
     if (includeJvmMetrics) {
@@ -160,7 +176,12 @@ public class WavefrontTracer implements Tracer, Closeable {
         wfSpanReporter.getWavefrontSender(), applicationTags,
             Arrays.asList(WAVEFRONT_GENERATED_COMPONENT, OPENTRACING_COMPONENT, JAVA_COMPONENT),
         wfSpanReporter.getSource());
-    return new Tuple(wfInternalReporter, wfJvmReporter, heartbeaterService);
+    return new Tuple(wfInternalReporter, wfDerivedReporter, wfJvmReporter, heartbeaterService);
+  }
+
+  @Nullable
+  WavefrontInternalReporter getWfInternalReporter() {
+    return wfInternalReporter;
   }
 
   @Override
@@ -220,7 +241,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   void reportWavefrontGeneratedData(WavefrontSpan span) {
-    if (wfInternalReporter == null) {
+    if (wfDerivedReporter == null) {
       // WavefrontSpanReporter not set, so no tracing spans will be reported as metrics/histograms.
       return;
     }
@@ -230,21 +251,41 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(OPERATION_NAME_TAG, span.getOperationName());
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
-    wfInternalReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + INVOCATION_SUFFIX), pointTags)).inc();
+
+    String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
+        applicationTags.getApplication());
+    String service = overrideWithSingleValuedSpanTag(span, pointTags, SERVICE_TAG_KEY,
+        applicationTags.getService());
+    overrideWithSingleValuedSpanTag(span, pointTags, CLUSTER_TAG_KEY, applicationTags.getCluster());
+    overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
+
+    String metricNamePrefix = application + "." + service + "." + span.getOperationName();
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
+        pointTags)).inc();
     if (span.isError()) {
-      wfInternalReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-          span.getOperationName() + ERROR_SUFFIX), pointTags)).inc();
+      wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + ERROR_SUFFIX),
+          pointTags)).inc();
     }
     long spanDurationMicros = span.getDurationMicroseconds();
     // Convert from micros to millis and add to duration counter
-    wfInternalReporter.newCounter(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + TOTAL_TIME_SUFFIX), pointTags)).
-        inc(spanDurationMicros / 1000);
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
+        pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
-    wfInternalReporter.newWavefrontHistogram(new MetricName(sanitize(applicationServicePrefix +
-        span.getOperationName() + DURATION_SUFFIX), pointTags)).
-        update(spanDurationMicros);
+    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
+        pointTags)).update(spanDurationMicros);
+  }
+
+  private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
+                                                 String key, String defaultValue) {
+    String spanTagValue = span.getSingleValuedTagValue(key);
+    if (spanTagValue == null) {
+      return defaultValue;
+    }
+    // If span tag value is different from the default, we need to override the point tag
+    if (!spanTagValue.equals(defaultValue)) {
+      pointTags.put(key, spanTagValue);
+    }
+    return spanTagValue;
   }
 
   private String sanitize(String s) {
@@ -287,12 +328,14 @@ public class WavefrontTracer implements Tracer, Closeable {
     // tags can be repeated and include high-cardinality tags
     private final List<Pair<String, String>> tags;
     private final Reporter reporter;
+    private ScopeManager scopeManager = new ThreadLocalScopeManager();
     // application metadata, will not have repeated tags and will be low cardinality tags
     private final ApplicationTags applicationTags;
     private final List<Sampler> samplers;
     // Default to 1min
     private Supplier<Long> reportingFrequencyMillis = () -> 60000L;
     private boolean includeJvmMetrics = true;
+    private final PropagatorRegistry registry = new PropagatorRegistry();
 
     /**
      * Constructor.
@@ -378,12 +421,36 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
+     * Scope manager to use for span management.
+     *
+     * @param scopeManager
+     * @return {@code this}
+     */
+    public Builder withScopeManager(ScopeManager scopeManager) {
+      this.scopeManager = scopeManager;
+      return this;
+    }
+
+    /**
      * Invoke this method if you already are publishing JVM metrics from your app to Wavefront.
      *
      * @return {@code this}
      */
     public Builder excludeJvmMetrics() {
       includeJvmMetrics = false;
+      return this;
+    }
+
+    /**
+     * Register custom propagator to support various formats.
+     *
+     * @param format {@link Format}
+     * @param propagator {@link Propagator}
+     * @param <T> describes format type
+     * @return {@code this}
+     */
+    public <T> Builder registerPropagator(Format<T> format, Propagator<T> propagator) {
+      this.registry.register(format, propagator);
       return this;
     }
 
@@ -405,8 +472,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public WavefrontTracer build() {
       applyApplicationTags();
-      return new WavefrontTracer(reporter, tags, applicationTags, samplers,
-          reportingFrequencyMillis, includeJvmMetrics);
+      return new WavefrontTracer(this);
     }
   }
 
@@ -415,6 +481,9 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.reporter.close();
     if (wfInternalReporter != null) {
       wfInternalReporter.stop();
+    }
+    if (wfDerivedReporter != null) {
+      wfDerivedReporter.stop();
     }
     if (wfJvmReporter != null) {
       wfJvmReporter.stop();

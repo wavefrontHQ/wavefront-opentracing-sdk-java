@@ -3,7 +3,9 @@ package com.wavefront.opentracing;
 import com.wavefront.sdk.common.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -128,10 +130,6 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
       startTimeMicros = tracer.currentTimeMicros();
       startTimeNanos = System.nanoTime();
     }
-    List<Pair<String, String>> globalTags = tracer.getTags();
-    if (globalTags != null && !globalTags.isEmpty()) {
-      tags.addAll(globalTags);
-    }
     WavefrontSpanContext ctx = createSpanContext();
     if (!ctx.isSampled()) {
       // this indicates a root span and that no decision has been inherited from a parent span.
@@ -148,7 +146,36 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
     WavefrontSpanContext traceCtx = traceAncestry();
     UUID traceId = (traceCtx == null) ? UUID.randomUUID() : traceCtx.getTraceId();
     Boolean sampling = (traceCtx == null) ? null : traceCtx.getSamplingDecision();
-    return new WavefrontSpanContext(traceId, spanId, null, sampling);
+    return new WavefrontSpanContext(traceId, spanId, getBaggage(), sampling);
+  }
+
+  @Nullable
+  private Map<String, String> getBaggage() {
+    return addItems(follows, addItems(parents, null));
+  }
+
+  /**
+   * Gets a map containing baggage items of all the given references.
+   *
+   * @param references the list of references to process
+   * @param baggage the map to add items to, can be null in which case a new map is created/returned
+   * @return the map containing baggage items from all references
+   */
+  @Nullable
+  private Map<String, String> addItems(List<Reference> references,
+                                       @Nullable Map<String, String> baggage) {
+    if (references != null && !references.isEmpty()) {
+      for (Reference ref : references) {
+        Map<String, String> refBaggage = ref.getSpanContext().getBaggage();
+        if (refBaggage != null && !refBaggage.isEmpty()) {
+          if (baggage == null) {
+            baggage = new HashMap<>();
+          }
+          baggage.putAll(refBaggage);
+        }
+      }
+    }
+    return baggage;
   }
 
   @Nullable
