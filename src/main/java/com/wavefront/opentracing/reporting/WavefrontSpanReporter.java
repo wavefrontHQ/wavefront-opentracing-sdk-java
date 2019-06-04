@@ -216,9 +216,10 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
 
     // init internal metrics
     metricsReporter.newGauge(new MetricName("reporter.queue.size", Collections.emptyMap()),
-        () -> (double) spanBuffer.size());
+        () -> (() -> (double) spanBuffer.size())
+    );
     metricsReporter.newGauge(new MetricName("reporter.queue.remaining_capacity",
-        Collections.emptyMap()), () -> (double) spanBuffer.remainingCapacity());
+        Collections.emptyMap()), () -> (() -> (double) spanBuffer.remainingCapacity()));
     spansReceived = metricsReporter.newCounter(new MetricName("reporter.spans.received",
         Collections.emptyMap()));
     spansDropped = metricsReporter.newCounter(new MetricName("reporter.spans.dropped",
