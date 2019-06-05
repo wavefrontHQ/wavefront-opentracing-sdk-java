@@ -191,7 +191,7 @@ public class WavefrontSpan implements Span {
       long currentTimeMicros, Map<String, ?> fields) {
     if (fields != null) {
       Map<String, String> finalFields = fields.entrySet().stream().collect(
-          toMap(Map.Entry::getKey, value -> value.toString()));
+          toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
       spanLogs.add(new SpanLog(currentTimeMicros, finalFields));
     }
     return this;
