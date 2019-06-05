@@ -114,7 +114,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
      * @return {@code this}
      */
     public Builder disableSpanLogReporting() {
-      this.reportSpanLogs = true;
+      this.reportSpanLogs = false;
       return this;
     }
 
