@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.wavefront.sdk.common.Utils.spanLogsToJsonLine;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 
 /**
  * Console reporter that logs finished spans to the console. Useful for debugging.
@@ -51,7 +51,7 @@ public class ConsoleReporter implements Reporter {
     if (spanLogs != null && !spanLogs.isEmpty()) {
       try {
         System.out.println("SpanLogs: " +
-            spanLogsToJsonLine(ctx.getTraceId(), ctx.getSpanId(), spanLogs));
+            spanLogsToLineData(ctx.getTraceId(), ctx.getSpanId(), spanLogs));
       } catch (JsonProcessingException e) {
         System.out.println("Error processing the span logs " + e);
       }
