@@ -13,7 +13,10 @@ import javax.annotation.Nullable;
 import io.opentracing.propagation.TextMap;
 
 /**
- * Bridge for propagating Jaeger headers in a WavefrontSpanContext.
+ * Bridge for extracting/injecting Jaeger headers to/from a WavefrontSpanContext.
+ *
+ * Essentially allows for extracting Jaeger HTTP headers and creating a WavefrontSpanContext or
+ * injecting Jaeger aware HTTP headers from a WavefrontSpanContext.
  *
  * @author akuncham@vmware.com
  *
@@ -21,7 +24,7 @@ import io.opentracing.propagation.TextMap;
  * Example usage:
  *
  * <pre>{@code
- * JaegerToWavefrontPropagator propogator = new JaegerToWavefrontPropagator.Builder()
+ * JaegerWavefrontPropagator propogator = new JaegerWavefrontPropagator.Builder()
  *                                         .withBaggagePrefix("uberctx-")
  *                                         .withTraceIdHeader("uber-trace-id").build();
  * tracerBuilder = new WavefrontTracer.Builder(..);
@@ -33,7 +36,7 @@ import io.opentracing.propagation.TextMap;
  *
  * <p>
  */
-public class JaegerToWavefrontPropagator implements Propagator<TextMap> {
+public class JaegerWavefrontPropagator implements Propagator<TextMap> {
 
   private static final String BAGGAGE_PREFIX = "baggage-";
   private static final String TRACE_ID_KEY = "trace-id";
@@ -43,7 +46,7 @@ public class JaegerToWavefrontPropagator implements Propagator<TextMap> {
   private final String traceIdHeader;
   private final String baggagePrefix;
 
-  private JaegerToWavefrontPropagator(Builder builder) {
+  private JaegerWavefrontPropagator(Builder builder) {
     this.traceIdHeader = builder.traceIdHeader;
     this.baggagePrefix = builder.baggagePrefix;
   }
@@ -55,8 +58,7 @@ public class JaegerToWavefrontPropagator implements Propagator<TextMap> {
     UUID spanId = null;
     String parentId = null;
     Boolean samplingDecision = null;
-    Map<String, String> baggage = null;
-    baggage = new HashMap<>();
+    Map<String, String> baggage = new HashMap<>();
 
     for (Map.Entry<String, String> entry : carrier) {
       String k = entry.getKey().toLowerCase();
@@ -201,16 +203,16 @@ public class JaegerToWavefrontPropagator implements Propagator<TextMap> {
   }
 
   /**
-   * Gets a new {@link JaegerToWavefrontPropagator.Builder} instance.
+   * Gets a new {@link JaegerWavefrontPropagator.Builder} instance.
    *
-   * @return a {@link JaegerToWavefrontPropagator.Builder}
+   * @return a {@link JaegerWavefrontPropagator.Builder}
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * A builder for {@link JaegerToWavefrontPropagator} instances.
+   * A builder for {@link JaegerWavefrontPropagator} instances.
    */
   public static class Builder {
     private String traceIdHeader = TRACE_ID_KEY;
@@ -227,12 +229,12 @@ public class JaegerToWavefrontPropagator implements Propagator<TextMap> {
     }
 
     /**
-     * Builds and returns a JaegerToWavefrontPropagator instance based on the given configuration.
+     * Builds and returns a JaegerWavefrontPropagator instance based on the given configuration.
      *
-     * @return a {@link JaegerToWavefrontPropagator}
+     * @return a {@link JaegerWavefrontPropagator}
      */
-    public JaegerToWavefrontPropagator build() {
-      return new JaegerToWavefrontPropagator(this);
+    public JaegerWavefrontPropagator build() {
+      return new JaegerWavefrontPropagator(this);
     }
   }
 }
