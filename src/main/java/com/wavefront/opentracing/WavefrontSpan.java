@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import io.opentracing.Span;
+import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 
 import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
@@ -109,6 +110,11 @@ public class WavefrontSpan implements Span {
   @Override
   public WavefrontSpan setTag(String key, Number value) {
     return setTagObject(key, value);
+  }
+
+  @Override
+  public <T> Span setTag(Tag<T> tag, T value) {
+    return setTagObject(tag.getKey(), value);
   }
 
   private synchronized WavefrontSpan setTagObject(String key, Object value) {

@@ -35,6 +35,16 @@ public class WavefrontSpanContext implements SpanContext {
   }
 
   @Override
+  public String toTraceId() {
+    return traceId.toString();
+  }
+
+  @Override
+  public String toSpanId() {
+    return spanId.toString();
+  }
+
+  @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
     return Collections.unmodifiableMap(baggage).entrySet();
   }
