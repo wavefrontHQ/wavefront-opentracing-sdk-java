@@ -12,8 +12,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
-import io.opentracing.propagation.TextMapExtractAdapter;
-import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.propagation.TextMapAdapter;
 
 import static com.wavefront.opentracing.Utils.buildApplicationTags;
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
@@ -37,10 +36,10 @@ public class WavefrontTracerTest {
     span.setBaggageItem("requestType", "mobile");
 
     Map<String, String> map = new HashMap<>();
-    TextMap textMapInjectAdapter = new TextMapInjectAdapter(map);
+    TextMap textMapInjectAdapter = new TextMapAdapter(map);
     tracer.inject(span.context(), Format.Builtin.TEXT_MAP, textMapInjectAdapter);
 
-    TextMap textMapExtractAdapter = new TextMapExtractAdapter(map);
+    TextMap textMapExtractAdapter = new TextMapAdapter(map);
     WavefrontSpanContext ctx = (WavefrontSpanContext) tracer.extract(Format.Builtin.TEXT_MAP,
         textMapExtractAdapter);
 

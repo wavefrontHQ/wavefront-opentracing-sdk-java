@@ -196,6 +196,11 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   @Override
+  public Scope activateSpan(Span span) {
+    return this.scopeManager.activate(span);
+  }
+
+  @Override
   public SpanBuilder buildSpan(String operationName) {
     return new WavefrontSpanBuilder(operationName, this);
   }
@@ -477,8 +482,13 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   @Override
-  public void close() throws IOException {
-    this.reporter.close();
+  public void close() {
+    try {
+      this.reporter.close();
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Error closing reporter", e);
+    }
+
     if (wfInternalReporter != null) {
       wfInternalReporter.stop();
     }

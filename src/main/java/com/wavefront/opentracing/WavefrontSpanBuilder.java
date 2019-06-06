@@ -16,6 +16,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.tag.Tag;
 
 /**
  * The class used for building {@link WavefrontSpan}s in accordance with the OpenTracing spec:
@@ -98,6 +99,11 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
   @Override
   public Tracer.SpanBuilder withTag(String key, Number value) {
     return setTagObject(key, value);
+  }
+
+  @Override
+  public <T> Tracer.SpanBuilder withTag(Tag<T> tag, T value) {
+    return setTagObject(tag.getKey(), value);
   }
 
   private Tracer.SpanBuilder setTagObject(String key, Object value) {
