@@ -1,11 +1,14 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.application.ApplicationTags;
 import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import io.opentracing.Scope;
@@ -51,6 +54,7 @@ public class WavefrontSpanBuilderTest {
     WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
         withTag("key1", "value1").
         withTag("key1", "value2").
+        withTag(Constants.APPLICATION_TAG_KEY, "yourApplication").
         start();
 
     assertNotNull(span);
@@ -59,6 +63,11 @@ public class WavefrontSpanBuilderTest {
     assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
+    assertTrue(span.getTagsAsMap().get(Constants.SERVICE_TAG_KEY).contains("myService"));
+    // Check that application tag was replaced
+    assertEquals(1, span.getTagsAsMap().get(Constants.APPLICATION_TAG_KEY).size());
+    assertTrue(span.getTagsAsMap().get(Constants.APPLICATION_TAG_KEY).contains("yourApplication"));
+    assertEquals("yourApplication", span.getSingleValuedTagValue(Constants.APPLICATION_TAG_KEY));
   }
 
   @Test
@@ -173,5 +182,45 @@ public class WavefrontSpanBuilderTest {
     assertTrue(span.context().isSampled());
     assertNotNull(span.context().getSamplingDecision());
     assertFalse(span.context().getSamplingDecision());
+  }
+
+  @Test
+  public void testBaggageItems() {
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).build();
+
+    // Create parentCtx with baggage items
+    Map<String, String> bag = new HashMap<>();
+    bag.put("foo", "bar");
+    bag.put("user", "name");
+    WavefrontSpanContext parentCtx = new WavefrontSpanContext(UUID.randomUUID(), UUID.randomUUID(),
+        bag, Boolean.TRUE);
+
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").
+        asChildOf(parentCtx).
+        start();
+    assertNotNull(span.getBaggageItem("foo"));
+    assertNotNull(span.getBaggageItem("user"));
+
+    // parent and follows
+    Map<String, String> items = new HashMap<>();
+    items.put("tracker", "id");
+    items.put("db.name", "name");
+    WavefrontSpanContext follows = new WavefrontSpanContext(UUID.randomUUID(), UUID.randomUUID(),
+        items, Boolean.TRUE);
+
+    span = (WavefrontSpan) tracer.buildSpan("testOp").
+        asChildOf(parentCtx).
+        asChildOf(follows).
+        start();
+    assertNotNull(span.getBaggageItem("foo"));
+    assertNotNull(span.getBaggageItem("user"));
+    assertNotNull(span.getBaggageItem("tracker"));
+    assertNotNull(span.getBaggageItem("db.name"));
+
+    // validate root span
+    span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    assertNotNull(span.context().getBaggage());
+    assertTrue(span.context().getBaggage().isEmpty());
   }
 }
