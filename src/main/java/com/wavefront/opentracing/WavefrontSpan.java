@@ -45,7 +45,6 @@ public class WavefrontSpan implements Span {
   private final List<Pair<String, String>> tags;
   private final List<Reference> parents;
   private final List<Reference> follows;
-  private final List<SpanLog> spanLogs;
   @Nullable
   private final Counter spansDiscarded;
 
@@ -57,6 +56,8 @@ public class WavefrontSpan implements Span {
   private Boolean forceSampling = null;
   private boolean finished = false;
   private boolean isError = false;
+  @Nullable
+  private List<SpanLog> spanLogs;
 
   // Store it as a member variable so that we can efficiently retrieve the component tag.
   private String componentTagValue = NULL_TAG_VAL;
@@ -84,6 +85,7 @@ public class WavefrontSpan implements Span {
     this.tags = (globalTags == null || globalTags.isEmpty()) && (tags == null || tags.isEmpty()) ?
       null : new ArrayList<>();
     this.singleValuedTags = null;
+    this.spanLogs = null;
     if (globalTags != null) {
       for (Pair<String, String> tag : globalTags) {
         setTagObject(tag._1, tag._2);
@@ -94,7 +96,6 @@ public class WavefrontSpan implements Span {
         setTagObject(tag._1, tag._2);
       }
     }
-    this.spanLogs = new ArrayList<>();
   }
 
   @Override
@@ -176,7 +177,7 @@ public class WavefrontSpan implements Span {
   }
 
   @Override
-  public synchronized WavefrontSpan log(long currentTimeMicros, Map<String, ?> map) {
+  public WavefrontSpan log(long currentTimeMicros, Map<String, ?> map) {
     updateSpanLogsInternal(currentTimeMicros, map);
     return this;
   }
@@ -195,6 +196,9 @@ public class WavefrontSpan implements Span {
 
   private synchronized WavefrontSpan updateSpanLogsInternal(
       long currentTimeMicros, Map<String, ?> fields) {
+    if (spanLogs == null) {
+      spanLogs = new ArrayList<>();
+    }
     if (fields != null) {
       Map<String, String> finalFields = fields.entrySet().stream().collect(
           toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
@@ -290,7 +294,7 @@ public class WavefrontSpan implements Span {
   /**
    * Gets the map of multi-valued tags.
    *
-   * @return The map of tags
+   * @return The map of tags.
    */
   public synchronized Map<String, Collection<String>> getTagsAsMap() {
     if (tags == null) {
@@ -306,7 +310,15 @@ public class WavefrontSpan implements Span {
     );
   }
 
-  public List<SpanLog> getSpanLogs() {
+  /**
+   * Gets the list of span logs.
+   *
+   * @return The list of span logs.
+   */
+  public synchronized List<SpanLog> getSpanLogs() {
+    if (spanLogs == null) {
+      return Collections.emptyList();
+    }
     return Collections.unmodifiableList(spanLogs);
   }
 

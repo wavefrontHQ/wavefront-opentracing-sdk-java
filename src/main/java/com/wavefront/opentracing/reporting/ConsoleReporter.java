@@ -48,7 +48,7 @@ public class ConsoleReporter implements Reporter {
         span.getStartTimeMicros(), span.getDurationMicroseconds(), source, ctx.getTraceId(),
         ctx.getSpanId(), parents, follows, span.getTagsAsList(), spanLogs, "unknown");
     System.out.println("Finished span: sampling=" + ctx.getSamplingDecision() + " " + spanLine);
-    if (spanLogs != null && !spanLogs.isEmpty()) {
+    if (!spanLogs.isEmpty()) {
       try {
         System.out.println("SpanLogs: " +
             spanLogsToLineData(ctx.getTraceId(), ctx.getSpanId(), spanLogs));
