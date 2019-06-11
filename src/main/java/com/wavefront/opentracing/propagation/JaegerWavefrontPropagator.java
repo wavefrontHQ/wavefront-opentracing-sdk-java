@@ -62,7 +62,7 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
 
     for (Map.Entry<String, String> entry : carrier) {
       String k = entry.getKey().toLowerCase();
-      if (k.equals(traceIdHeader)) {
+      if (k.equalsIgnoreCase(traceIdHeader)) {
         String[] traceData = contextFromTraceIdHeader(entry.getValue());
         if (traceData == null) {
           continue;
