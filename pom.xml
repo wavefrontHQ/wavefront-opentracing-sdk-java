@@ -93,12 +93,6 @@
             <artifactId>wavefront-runtime-sdk-jvm</artifactId>
             <version>0.9.5</version>
         </dependency>
-        <!--TODO: remove this dependency after runtime sdk is updated-->
-        <dependency>
-            <groupId>com.wavefront</groupId>
-            <artifactId>wavefront-sdk-java</artifactId>
-            <version>1.6-SNAPSHOT</version>
-        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
