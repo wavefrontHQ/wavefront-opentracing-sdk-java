@@ -153,7 +153,7 @@ public class WavefrontSpanTest {
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).
-        redMetricsCustomTags(new HashSet<>(Arrays.asList("tenant", "env"))).
+        redMetricsCustomTagKeys(new HashSet<>(Arrays.asList("tenant", "env"))).
         build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
         withTag("env", "Staging").startActive(true).close();
