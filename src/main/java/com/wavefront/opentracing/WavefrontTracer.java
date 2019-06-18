@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -68,6 +70,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final WavefrontJvmReporter wfJvmReporter;
   private final Supplier<Long> reportFrequencyMillis;
   private final ApplicationTags applicationTags;
+  private final Set<String> redMetricsCustomTagKeys;
 
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
@@ -86,6 +89,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.samplers = builder.samplers;
     this.applicationTags = builder.applicationTags;
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
+    this.redMetricsCustomTagKeys = builder.redMetricsCustomTagKeys;
 
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
@@ -257,6 +261,17 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
 
+    // avoid iterating through the span tags if user has not instantiated any red-metric custom tags
+    if (redMetricsCustomTagKeys.size() > 0) {
+      Map<String, Collection<String>> spanTags = span.getTagsAsMap();
+      for (String customTagKey : redMetricsCustomTagKeys) {
+        if (spanTags.containsKey(customTagKey)) {
+          // Assuming at least one value exists ...
+          pointTags.put(customTagKey, spanTags.get(customTagKey).iterator().next());
+        }
+      }
+    }
+
     String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
         applicationTags.getApplication());
     String service = overrideWithSingleValuedSpanTag(span, pointTags, SERVICE_TAG_KEY,
@@ -339,6 +354,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     private final List<Sampler> samplers;
     // Default to 1min
     private Supplier<Long> reportingFrequencyMillis = () -> 60000L;
+    private final Set<String> redMetricsCustomTagKeys = new HashSet<>();
     private boolean includeJvmMetrics = true;
     private final PropagatorRegistry registry = new PropagatorRegistry();
 
@@ -456,6 +472,22 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public <T> Builder registerPropagator(Format<T> format, Propagator<T> propagator) {
       this.registry.register(format, propagator);
+      return this;
+    }
+
+    /**
+     * Set custom RED metrics tags. If the span has any of the tags, then those get reported to
+     * the span generated RED metrics.
+     * Example - If you have a span tag of 'tenant-id', that you also want to be propagated to the
+     * RED metrics then you would call this method and pass in 'tenant-id' to the set.
+     * Caveat - ensure that redMetricsCustomTagKeys are low cardinality tags.
+     *
+     * @param redMetricsCustomTagKeys set of custom tags you want to report for the span-generated RED
+     *                             metrics.
+     * @return {@code this}
+     */
+    Builder redMetricsCustomTagKeys(Set<String> redMetricsCustomTagKeys) {
+      this.redMetricsCustomTagKeys.addAll(redMetricsCustomTagKeys);
       return this;
     }
 
