@@ -59,7 +59,6 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
     String parentId = null;
     Boolean samplingDecision = null;
     Map<String, String> baggage = new HashMap<>();
-
     for (Map.Entry<String, String> entry : carrier) {
       String k = entry.getKey().toLowerCase();
       if (k.equalsIgnoreCase(traceIdHeader)) {
@@ -67,19 +66,22 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
         if (traceData == null) {
           continue;
         }
-        traceId = traceIdToUuid(traceData[0]);
-        spanId = spanIdToUuid(traceData[1]);
-        parentId = traceData[2];
+        traceId = toUuid(traceData[0]);
+        spanId = toUuid(traceData[1]);
+        // setting parentId as current spanId
+        parentId = spanId.toString();
         samplingDecision = traceData[3].equals("1");
-      } else if (k.startsWith(baggagePrefix)) {
-        baggage.put(strippedPrefix(entry.getKey()), entry.getValue());
+      } else if (k.startsWith(baggagePrefix.toLowerCase())) {
+          baggage.put(strippedPrefix(entry.getKey()), entry.getValue());
       }
     }
 
     if (traceId == null || spanId == null) {
       return null;
     }
-    baggage.put(PARENT_ID_KEY, parentId);
+    if(parentId.trim().length() > 0 && !"null".equals(parentId)) {
+      baggage.put(PARENT_ID_KEY, parentId);
+    }
     return new WavefrontSpanContext(traceId, spanId, baggage, samplingDecision);
   }
 
@@ -150,7 +152,7 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
    * @param id UUID of the traceId or spanId
    * @return BigInteger for UUID.
    */
-  private BigInteger uuidToBigInteger(UUID id) {
+  BigInteger uuidToBigInteger(UUID id) {
     ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
     bb.putLong(id.getMostSignificantBits());
     bb.putLong(id.getLeastSignificantBits());
@@ -174,32 +176,18 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
   }
 
   /**
-   * Constructs a UUID for the spanId represented as hexString.
-   *
-   * UUID is constructed with the long value of the lower 64 bits of the spanId to be consistent
-   * with Jaeger client's approach.
-   *
-   * @param id spanId as hexString
-   * @return UUID of the spanId as expected by WavefrontSpanContext
-   */
-  private UUID spanIdToUuid(String id) {
-    long num = new BigInteger(id, 16).longValue();
-    return new UUID(0, num);
-  }
-
-  /**
-   * Constructs UUID for traceId represented as hexString consisting  of (low + high) 64 bits.
+   * Constructs UUID for traceId/spanId represented as hexString consisting  of (low + high) 64 bits.
    *
    * UUID is generated with long value of  high 64 bits(if any) and long value of low 64 bits and is
    * consistent with the Wavefront approach.
    *
-   * @param id hexString form of traceId
-   * @return UUID for traceId as expected by WavefrontSpanContext
+   * @param id hexString form of traceId/spanId
+   * @return UUID for traceId/spanId as expected by WavefrontSpanContext
    */
-  private UUID traceIdToUuid(String id) {
-    long traceIdLow = new BigInteger(id, 16).longValue();
-    long traceIdHigh = high(id);
-    return new UUID(traceIdHigh, traceIdLow);
+  UUID toUuid(String id) {
+    long idLow = new BigInteger(id, 16).longValue();
+    long idHigh = high(id);
+    return new UUID(idHigh, idLow);
   }
 
   /**
