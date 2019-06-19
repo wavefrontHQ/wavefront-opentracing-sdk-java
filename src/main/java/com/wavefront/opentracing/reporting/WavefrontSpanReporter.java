@@ -36,6 +36,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
   private final Thread sendingThread;
   private final Random random;
   private final float logPercent;
+  private final boolean reportSpanLogs;
 
   /**
    * Users create a WavefrontSpanReporter and provide it to the tracer, which upon initialization
@@ -52,6 +53,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
     private String source;
     private int maxQueueSize = 50000;
     private float logPercent = 0.1f;
+    private boolean reportSpanLogs = true;
 
     public Builder() {
       this.source = getDefaultSource();
@@ -102,7 +104,17 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
       if (percent < 0.0 || percent > 1.0) {
         throw new IllegalArgumentException("invalid logging percent");
       }
-      logPercent = percent;
+      this.logPercent = percent;
+      return this;
+    }
+
+    /**
+     * Disable the reporting of span logs.
+     *
+     * @return {@code this}
+     */
+    public Builder disableSpanLogReporting() {
+      this.reportSpanLogs = false;
       return this;
     }
 
@@ -113,17 +125,19 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
      * @return {@link WavefrontSpanReporter}
      */
     public WavefrontSpanReporter build(WavefrontSender wavefrontSender) {
-      return new WavefrontSpanReporter(wavefrontSender, this.source, this.maxQueueSize, this.logPercent);
+      return new WavefrontSpanReporter(wavefrontSender, this.source, this.maxQueueSize,
+          this.logPercent, this.reportSpanLogs);
     }
   }
 
   private WavefrontSpanReporter(WavefrontSender wavefrontSender, String source, int maxQueueSize,
-                                float logPercent) {
+                                float logPercent, boolean reportSpanLogs) {
     this.wavefrontSender = wavefrontSender;
     this.source = source;
     this.spanBuffer = new LinkedBlockingQueue<>(maxQueueSize);
     this.random = new Random();
     this.logPercent = logPercent;
+    this.reportSpanLogs = reportSpanLogs;
 
     sendingThread = new Thread(this, "wavefrontSpanReporter");
     sendingThread.setDaemon(true);
@@ -182,7 +196,7 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
 
       wavefrontSender.sendSpan(span.getOperationName(), span.getStartTimeMicros() / 1000,
           span.getDurationMicroseconds() / 1000, source, ctx.getTraceId(), ctx.getSpanId(),
-          parents, follows, span.getTagsAsList(), null);
+          parents, follows, span.getTagsAsList(), reportSpanLogs ? span.getSpanLogs() : null);
     } catch (IOException e) {
       if (loggingAllowed()) {
         logger.log(Level.WARNING, "error reporting span: " + span, e);

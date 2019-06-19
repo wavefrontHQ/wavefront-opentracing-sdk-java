@@ -1,15 +1,18 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.opentracing.reporting.ConsoleReporter;
+import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.entities.tracing.sampling.ConstantSampler;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.log.Fields;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.propagation.TextMapAdapter;
@@ -114,5 +117,29 @@ public class WavefrontTracerTest {
     assertEquals(5, span.getTagsAsMap().size());
     assertTrue(span.getTagsAsMap().get("key1").contains("value1"));
     assertTrue(span.getTagsAsMap().get("key1").contains("value2"));
+  }
+
+  @Test
+  public void testSpanLogs() {
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new ConsoleReporter(DEFAULT_SOURCE), buildApplicationTags()).build();
+    WavefrontSpan span = (WavefrontSpan) tracer.buildSpan("testOp").start();
+    long timeStamp1 = System.currentTimeMillis() * 1000;
+    long timeStamp2 = timeStamp1 + 10_000;
+    String logMessage = "test-log";
+    span.log(timeStamp1, logMessage);
+    Map<String, String> eventsMap = new HashMap<String, String>() {{
+      put("event.name", "foo");
+      put("event.kind", "error");
+    }};
+    span.log(timeStamp2, eventsMap);
+    List<SpanLog> spanLogs = span.getSpanLogs();
+    assertEquals(2, spanLogs.size());
+    assertEquals(timeStamp1, spanLogs.get(0).getTimestamp());
+    assertEquals(logMessage, spanLogs.get(0).getFields().get(Fields.EVENT));
+    assertEquals(timeStamp2, spanLogs.get(1).getTimestamp());
+    assertEquals(2, spanLogs.get(1).getFields().size());
+    assertEquals("foo", spanLogs.get(1).getFields().get("event.name"));
+    assertEquals("error", spanLogs.get(1).getFields().get("event.kind"));
   }
 }

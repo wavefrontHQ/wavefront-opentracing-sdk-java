@@ -1,13 +1,17 @@
 package com.wavefront.opentracing.reporting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.opentracing.Reference;
 import com.wavefront.opentracing.WavefrontSpan;
 import com.wavefront.opentracing.WavefrontSpanContext;
 import com.wavefront.sdk.common.Utils;
+import com.wavefront.sdk.entities.tracing.SpanLog;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 
 /**
  * Console reporter that logs finished spans to the console. Useful for debugging.
@@ -38,10 +42,20 @@ public class ConsoleReporter implements Reporter {
         map(WavefrontSpanContext::getSpanId).
         collect(Collectors.toList());
 
+    List<SpanLog> spanLogs = span.getSpanLogs();
+
     String spanLine = Utils.tracingSpanToLineData(span.getOperationName(),
         span.getStartTimeMicros(), span.getDurationMicroseconds(), source, ctx.getTraceId(),
-        ctx.getSpanId(), parents, follows, span.getTagsAsList(), null, "unknown");
+        ctx.getSpanId(), parents, follows, span.getTagsAsList(), spanLogs, "unknown");
     System.out.println("Finished span: sampling=" + ctx.getSamplingDecision() + " " + spanLine);
+    if (!spanLogs.isEmpty()) {
+      try {
+        System.out.println("SpanLogs: " +
+            spanLogsToLineData(ctx.getTraceId(), ctx.getSpanId(), spanLogs));
+      } catch (JsonProcessingException e) {
+        System.out.println("Error processing the span logs " + e);
+      }
+    }
   }
 
   @Override

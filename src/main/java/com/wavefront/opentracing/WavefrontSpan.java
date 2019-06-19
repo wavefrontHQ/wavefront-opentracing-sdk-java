@@ -4,6 +4,7 @@ import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.entities.tracing.SpanLog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,11 +22,13 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import io.opentracing.Span;
+import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 
 import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Represents a thread-safe Wavefront trace span based on OpenTracing's {@link Span}.
@@ -53,6 +56,8 @@ public class WavefrontSpan implements Span {
   private Boolean forceSampling = null;
   private boolean finished = false;
   private boolean isError = false;
+  @Nullable
+  private List<SpanLog> spanLogs;
 
   // Store it as a member variable so that we can efficiently retrieve the component tag.
   private String componentTagValue = NULL_TAG_VAL;
@@ -80,6 +85,7 @@ public class WavefrontSpan implements Span {
     this.tags = (globalTags == null || globalTags.isEmpty()) && (tags == null || tags.isEmpty()) ?
       null : new ArrayList<>();
     this.singleValuedTags = null;
+    this.spanLogs = null;
     if (globalTags != null) {
       for (Pair<String, String> tag : globalTags) {
         setTagObject(tag._1, tag._2);
@@ -166,25 +172,38 @@ public class WavefrontSpan implements Span {
 
   @Override
   public WavefrontSpan log(Map<String, ?> map) {
-    // no-op
+    updateSpanLogsInternal(getCurrentTimeMicros(), map);
     return this;
   }
 
   @Override
-  public WavefrontSpan log(long l, Map<String, ?> map) {
-    // no-op
+  public WavefrontSpan log(long currentTimeMicros, Map<String, ?> map) {
+    updateSpanLogsInternal(currentTimeMicros, map);
     return this;
   }
 
   @Override
   public WavefrontSpan log(String s) {
-    // no-op
+    updateSpanLogsInternal(getCurrentTimeMicros(), Collections.singletonMap(Fields.EVENT, s));
     return this;
   }
 
   @Override
-  public WavefrontSpan log(long l, String s) {
-    // no-op
+  public WavefrontSpan log(long currentTimeMicros, String s) {
+    updateSpanLogsInternal(currentTimeMicros, Collections.singletonMap(Fields.EVENT, s));
+    return this;
+  }
+
+  private synchronized WavefrontSpan updateSpanLogsInternal(
+      long currentTimeMicros, Map<String, ?> fields) {
+    if (spanLogs == null) {
+      spanLogs = new ArrayList<>();
+    }
+    if (fields != null) {
+      Map<String, String> finalFields = fields.entrySet().stream().collect(
+          toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
+      spanLogs.add(new SpanLog(currentTimeMicros, finalFields));
+    }
     return this;
   }
 
@@ -275,7 +294,7 @@ public class WavefrontSpan implements Span {
   /**
    * Gets the map of multi-valued tags.
    *
-   * @return The map of tags
+   * @return The map of tags.
    */
   public synchronized Map<String, Collection<String>> getTagsAsMap() {
     if (tags == null) {
@@ -289,6 +308,18 @@ public class WavefrontSpan implements Span {
             )
         )
     );
+  }
+
+  /**
+   * Gets the list of span logs.
+   *
+   * @return The list of span logs.
+   */
+  public synchronized List<SpanLog> getSpanLogs() {
+    if (spanLogs == null) {
+      return Collections.emptyList();
+    }
+    return Collections.unmodifiableList(spanLogs);
   }
 
   /**
@@ -334,6 +365,13 @@ public class WavefrontSpan implements Span {
         ", parents=" + parents +
         ", follows=" + follows +
         '}';
+  }
+
+  /**
+   * Provides current system time in micros.
+   */
+  private long getCurrentTimeMicros() {
+    return System.currentTimeMillis() * 1000;
   }
 
   /**
