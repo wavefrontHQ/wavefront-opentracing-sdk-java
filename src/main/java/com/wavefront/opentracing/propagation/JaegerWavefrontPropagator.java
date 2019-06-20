@@ -72,14 +72,14 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
         parentId = spanId.toString();
         samplingDecision = traceData[3].equals("1");
       } else if (k.startsWith(baggagePrefix.toLowerCase())) {
-          baggage.put(strippedPrefix(entry.getKey()), entry.getValue());
+        baggage.put(strippedPrefix(entry.getKey()), entry.getValue());
       }
     }
 
     if (traceId == null || spanId == null) {
       return null;
     }
-    if(parentId.trim().length() > 0 && !"null".equals(parentId)) {
+    if (parentId.trim().length() > 0 && !"null".equals(parentId)) {
       baggage.put(PARENT_ID_KEY, parentId);
     }
     return new WavefrontSpanContext(traceId, spanId, baggage, samplingDecision);
