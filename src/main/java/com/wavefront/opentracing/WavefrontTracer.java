@@ -486,7 +486,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      *                             metrics.
      * @return {@code this}
      */
-    Builder redMetricsCustomTagKeys(Set<String> redMetricsCustomTagKeys) {
+    public Builder redMetricsCustomTagKeys(Set<String> redMetricsCustomTagKeys) {
       this.redMetricsCustomTagKeys.addAll(redMetricsCustomTagKeys);
       return this;
     }
