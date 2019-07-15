@@ -124,7 +124,8 @@ public class WavefrontSpan implements Span {
   }
 
   private synchronized WavefrontSpan setTagObject(String key, Object value) {
-    if (key != null && !key.isEmpty() && value != null) {
+    if (key != null && !key.isEmpty() && value != null && value.toString() != null &&
+        !(value.toString().isEmpty())) {
       Pair<String, String> tag = Pair.of(key, value.toString());
 
       // if tag should be single-valued, replace the previous value if it exists
