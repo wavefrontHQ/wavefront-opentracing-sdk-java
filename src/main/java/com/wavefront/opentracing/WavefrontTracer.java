@@ -261,6 +261,7 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
 
+    boolean customTagsMatch = false;
     // avoid iterating through the span tags if user has not instantiated any red-metric custom tags
     if (redMetricsCustomTagKeys.size() > 0) {
       Map<String, Collection<String>> spanTags = span.getTagsAsMap();
@@ -268,6 +269,7 @@ public class WavefrontTracer implements Tracer, Closeable {
         if (spanTags.containsKey(customTagKey)) {
           // Assuming at least one value exists ...
           pointTags.put(customTagKey, spanTags.get(customTagKey).iterator().next());
+          customTagsMatch = true;
         }
       }
     }
@@ -293,6 +295,13 @@ public class WavefrontTracer implements Tracer, Closeable {
     // Support duration in microseconds instead of milliseconds
     wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
         pointTags)).update(spanDurationMicros);
+
+    if (customTagsMatch) {
+      Map<String, String> customHeartbeatTagsMap = new HashMap<>(pointTags);
+      // heartbeat does not have operation tag
+      customHeartbeatTagsMap.remove(OPERATION_NAME_TAG);
+      heartbeaterService.reportCustomTags(customHeartbeatTagsMap);
+    }
   }
 
   private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
