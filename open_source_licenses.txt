@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware OpenTracing SDK for Java 1.7 GA
+Wavefront by VMware OpenTracing SDK for Java 1.8 GA
 
 ======================================================================
 
@@ -587,4 +587,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVA17GAAB062419]
+[WAVEFRONTOPENTRACINGSDKJAVA18GAAB062419]
