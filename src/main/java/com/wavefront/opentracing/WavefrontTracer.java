@@ -261,11 +261,13 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
 
+    boolean customTagMatch = false;
     // avoid iterating through the span tags if user has not instantiated any red-metric custom tags
     if (redMetricsCustomTagKeys.size() > 0) {
       Map<String, Collection<String>> spanTags = span.getTagsAsMap();
       for (String customTagKey : redMetricsCustomTagKeys) {
         if (spanTags.containsKey(customTagKey)) {
+          customTagMatch = true;
           // Assuming at least one value exists ...
           pointTags.put(customTagKey, spanTags.get(customTagKey).iterator().next());
         }
@@ -278,6 +280,11 @@ public class WavefrontTracer implements Tracer, Closeable {
         applicationTags.getService());
     overrideWithSingleValuedSpanTag(span, pointTags, CLUSTER_TAG_KEY, applicationTags.getCluster());
     overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
+
+    // Propagate custom tags to ~component.heartbeat
+    if (heartbeaterService != null && customTagMatch) {
+      heartbeaterService.reportCustomTags(pointTags);
+    }
 
     String metricNamePrefix = application + "." + service + "." + span.getOperationName();
     wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
