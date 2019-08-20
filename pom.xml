@@ -97,7 +97,7 @@
             <!-- Remove this dependendency after we release wavefront-runtime-sdk-jvm -->
             <groupId>com.wavefront</groupId>
             <artifactId>wavefront-sdk-java</artifactId>
-            <version>1.11</version>
+            <version>1.12</version>
         </dependency>
 
         <!-- Test Dependencies -->
