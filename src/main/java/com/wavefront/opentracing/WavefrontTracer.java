@@ -72,6 +72,8 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final ApplicationTags applicationTags;
   private final Set<String> redMetricsCustomTagKeys;
 
+  private final static Pattern WHITESPACE = Pattern.compile("[\\s]+");
+
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
   private final static String JAVA_COMPONENT = "java";
@@ -323,7 +325,6 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   private String sanitize(String s) {
-    Pattern WHITESPACE = Pattern.compile("[\\s]+");
     final String whitespaceSanitized = WHITESPACE.matcher(s).replaceAll("-");
     if (s.contains("\"") || s.contains("'")) {
       // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
