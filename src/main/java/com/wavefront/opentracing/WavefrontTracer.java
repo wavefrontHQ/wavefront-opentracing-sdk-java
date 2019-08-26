@@ -299,10 +299,14 @@ public class WavefrontTracer implements Tracer, Closeable {
         pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
     if (span.isError()) {
-      pointTags.put("error", "true");
+      Map<String, String> errorPointTags = new HashMap<>(pointTags);
+      errorPointTags.put("error", "true");
+      wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
+          errorPointTags)).update(spanDurationMicros);
+    } else {
+      wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
+          pointTags)).update(spanDurationMicros);
     }
-    wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
-        pointTags)).update(spanDurationMicros);
   }
 
   private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
