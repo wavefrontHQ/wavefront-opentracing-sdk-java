@@ -298,6 +298,9 @@ public class WavefrontTracer implements Tracer, Closeable {
     wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
         pointTags)).inc(spanDurationMicros / 1000);
     // Support duration in microseconds instead of milliseconds
+    if (span.isError()) {
+      pointTags.put("error", "true");
+    }
     wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
         pointTags)).update(spanDurationMicros);
   }
