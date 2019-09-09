@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware OpenTracing SDK for Java 1.10 GA
+Wavefront by VMware OpenTracing SDK for Java 1.11 GA
 
 ======================================================================
 
@@ -30,7 +30,7 @@ SECTION 1: Apache License, V2.0
    >>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
    >>> com.fasterxml.jackson.core:jackson-annotations-2.9.9
    >>> com.fasterxml.jackson.core:jackson-core-2.9.9
-   >>> com.fasterxml.jackson.core:jackson-databind-2.9.9
+   >>> com.fasterxml.jackson.core:jackson-databind-2.9.9.3
    >>> com.fasterxml.jackson.dataformat:jackson-dataformat-yaml-2.9.9
    >>> com.google.code.findbugs:jsr305-3.0.0
    >>> com.tdunning:t-digest-3.2
@@ -123,7 +123,7 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 
 
->>> com.fasterxml.jackson.core:jackson-databind-2.9.9
+>>> com.fasterxml.jackson.core:jackson-databind-2.9.9.3
 
 # Jackson JSON processor
 
@@ -277,8 +277,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
 
 --------------- SECTION 2: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
 
@@ -568,6 +566,7 @@ UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS T
     If any provision of this License is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this License, and without further action by the parties to this agreement, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
     No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
     This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
+	
 
 ======================================================================
 
@@ -587,4 +586,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVA110GAAB062419]
+[WAVEFRONTOPENTRACINGSDKJAVA111GAAB090919]
