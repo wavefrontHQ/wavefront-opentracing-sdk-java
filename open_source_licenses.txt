@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware OpenTracing SDK for Java 1.11 GA
+Wavefront by VMware OpenTracing SDK for Java 1.12 GA
 
 ======================================================================
 
@@ -28,9 +28,13 @@ of the license associated with each component.
 SECTION 1: Apache License, V2.0
 
    >>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
+   >>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
    >>> com.fasterxml.jackson.core:jackson-annotations-2.9.9
+   >>> com.fasterxml.jackson.core:jackson-core-2.9.10
    >>> com.fasterxml.jackson.core:jackson-core-2.9.9
+   >>> com.fasterxml.jackson.core:jackson-databind-2.9.10
    >>> com.fasterxml.jackson.core:jackson-databind-2.9.9.3
+   >>> com.fasterxml.jackson.dataformat:jackson-dataformat-yaml-2.9.10
    >>> com.fasterxml.jackson.dataformat:jackson-dataformat-yaml-2.9.9
    >>> com.google.code.findbugs:jsr305-3.0.0
    >>> com.tdunning:t-digest-3.2
@@ -76,9 +80,54 @@ You may obtain a copy of the License at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 
+>>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
+
+This copy of Jackson JSON processor annotations is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+
+
 >>> com.fasterxml.jackson.core:jackson-annotations-2.9.9
 
 This copy of Jackson JSON processor annotations is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+>>> com.fasterxml.jackson.core:jackson-core-2.9.10
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
+
+This copy of Jackson JSON processor streaming parser/generator is licensed under the
 Apache (Software) License, version 2.0 ("the License").
 See the License for details about distribution rights, and the
 specific rights regarding derivate works.
@@ -123,6 +172,40 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 
 
+>>> com.fasterxml.jackson.core:jackson-databind-2.9.10
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may be licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
+
+This copy of Jackson JSON processor databind module is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+
+
 >>> com.fasterxml.jackson.core:jackson-databind-2.9.9.3
 
 # Jackson JSON processor
@@ -157,6 +240,40 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 
 
+>>> com.fasterxml.jackson.dataformat:jackson-dataformat-yaml-2.9.10
+
+This copy of Jackson JSON processor YAML module is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may be licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
+
+
+
 >>> com.fasterxml.jackson.dataformat:jackson-dataformat-yaml-2.9.9
 
 Jackson JSON processor
@@ -188,8 +305,6 @@ specific rights regarding derivate works.
 You may obtain a copy of the License at:
 
 http://www.apache.org/licenses/LICENSE-2.0
-
-
 
 >>> com.google.code.findbugs:jsr305-3.0.0
 
@@ -278,6 +393,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+
+
 --------------- SECTION 2: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
 
 BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES are applicable to the following component(s).
@@ -288,23 +405,23 @@ BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES are applicable to the following 
 Copyright (c) 2004-2011 QOS.ch
 All rights reserved.
 
-Permission is hereby granted, free  of charge, to any person obtaining
-a  copy  of this  software  and  associated  documentation files  (the
-"Software"), to  deal in  the Software without  restriction, including
-without limitation  the rights to  use, copy, modify,  merge, publish,
-distribute,  sublicense, and/or sell  copies of  the Software,  and to
-permit persons to whom the Software  is furnished to do so, subject to
+Permission is hereby granted, free of charge, to any person obtaining
+a copy  of this  software  and  associated  documentation files  (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
 the following conditions:
 
-The  above  copyright  notice  and  this permission  notice  shall  be
+The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
 
-THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
-EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
-MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------- SECTION 3: Creative Commons Attribution 2.5  ----------
@@ -566,8 +683,8 @@ UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS T
     If any provision of this License is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this License, and without further action by the parties to this agreement, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
     No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
     This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
-	
 
+	
 ======================================================================
 
 To the extent any open source components are licensed under the GPL
@@ -586,4 +703,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTOPENTRACINGSDKJAVA111GAAB090919]
+[WAVEFRONTOPENTRACINGSDKJAVA112GAAB100119]
