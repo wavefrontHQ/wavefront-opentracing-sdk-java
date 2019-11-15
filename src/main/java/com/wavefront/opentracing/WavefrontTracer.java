@@ -197,8 +197,7 @@ public class WavefrontTracer implements Tracer, Closeable {
 
   @Override
   public Span activeSpan() {
-    Scope scope = this.scopeManager.active();
-    return scope == null ? null : scope.span();
+    return scopeManager.activeSpan();
   }
 
   @Override

@@ -32,11 +32,12 @@ public class WavefrontSpanBuilderTest {
   public void testIgnoreActiveSpan() {
     WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
         buildApplicationTags()).build();
-    Scope scope = tracer.buildSpan("testOp").startActive(true);
-    Span activeSpan = scope.span();
+    Span activeSpan = tracer.buildSpan("testOp").start();
+    tracer.activateSpan(activeSpan);
 
     // Span created without invoking ignoreActiveSpan() on SpanBuilder
     Span childSpan = tracer.buildSpan("childOp").start();
+    tracer.activateSpan(childSpan);
     String activeTraceId = ((WavefrontSpanContext) activeSpan.context()).getTraceId().toString();
     String childTraceId = ((WavefrontSpanContext) childSpan.context()).getTraceId().toString();
     assertEquals(activeTraceId, childTraceId);

@@ -120,16 +120,6 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
   }
 
   @Override
-  public Scope startActive(boolean finishSpanOnClose) {
-    return tracer.scopeManager().activate(start(), finishSpanOnClose);
-  }
-
-  @Override
-  public Span startManual() {
-    return start();
-  }
-
-  @Override
   public Span start() {
     long startTimeNanos = 0;
     if (startTimeMicros == 0) {
