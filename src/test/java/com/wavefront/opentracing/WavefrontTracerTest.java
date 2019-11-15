@@ -71,10 +71,11 @@ public class WavefrontTracerTest {
   public void testActiveSpan() {
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new ConsoleReporter(DEFAULT_SOURCE), buildApplicationTags()).build();
-    Scope scope = tracer.buildSpan("testOp").startActive(true);
-    Span span = tracer.activeSpan();
-    assertNotNull(span);
-    assertEquals(span, scope.span());
+    Span builtSpan = tracer.buildSpan("testOp").start();
+    tracer.activateSpan(builtSpan);
+    Span activeSpan = tracer.activeSpan();
+    assertNotNull(activeSpan);
+    assertEquals(builtSpan, activeSpan);
   }
 
   @Test

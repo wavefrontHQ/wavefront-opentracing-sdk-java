@@ -64,7 +64,7 @@ public class WavefrontSpanTest {
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).build();
-    tracer.buildSpan("dummyOp").startActive(true).close();
+    tracer.buildSpan("dummyOp").start().finish();
     // Sleep for 1 seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
@@ -110,7 +110,7 @@ public class WavefrontSpanTest {
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).build();
     tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), true).
-        startActive(true).close();
+        start().finish();
     // Sleep for 60+ seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
@@ -156,7 +156,7 @@ public class WavefrontSpanTest {
         redMetricsCustomTagKeys(new HashSet<>(Arrays.asList("tenant", "env"))).
         build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
-        withTag("env", "Staging").startActive(true).close();
+        withTag("env", "Staging").start().finish();
     // Sleep for 1 seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
@@ -198,7 +198,7 @@ public class WavefrontSpanTest {
         buildApplicationTags()).setReportFrequenceMillis(50).
         build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
-        withTag("env", "Staging").startActive(true).close();
+        withTag("env", "Staging").start().finish();
     // Sleep for 1 seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
