@@ -2,7 +2,9 @@ package com.wavefront.opentracing.propagation;
 
 import com.wavefront.opentracing.WavefrontSpanContext;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +30,8 @@ import io.opentracing.propagation.TextMap;
  *                                         .withBaggagePrefix("uberctx-")
  *                                         .withTraceIdHeader("uber-trace-id").build();
  * tracerBuilder = new WavefrontTracer.Builder(..);
- * tracerBuilder.registerPropogator(Format.Builtin.HTTP_HEADERS, propogator);
- * tracerBuilder.registerPropogator(Format.Builtin.TEXT_MAP, propogator);
+ * tracerBuilder.registerPropagator(Format.Builtin.HTTP_HEADERS, propogator);
+ * tracerBuilder.registerPropagator(Format.Builtin.TEXT_MAP, propogator);
  * WavefrontTracer tracer = tracerBuilder.build();
  * ...
  * }</pre>
@@ -108,6 +110,12 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
     if (value == null || value.equals("")) {
       return null;
     }
+    try {
+      // Jaeger HTTP headers may be URL encoded, so we need to decode before splitting
+      value = URLDecoder.decode(value, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      return null;
+    }
     String[] toks = value.split(":");
     if (toks.length != 4) {
       return null;
@@ -128,8 +136,13 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
   private String contextToTraceIdHeader(WavefrontSpanContext context) {
     BigInteger traceId = uuidToBigInteger(context.getTraceId());
     BigInteger spanId = uuidToBigInteger(context.getSpanId());
+    BigInteger parentId;
+    try {
+      parentId = uuidToBigInteger(UUID.fromString(context.getBaggageItem(PARENT_ID_KEY)));
+    } catch (Exception e) {
+      parentId = BigInteger.ZERO;
+    }
     Boolean samplingDecision = context.getSamplingDecision();
-    String parentId = context.getBaggageItem(PARENT_ID_KEY);
     if (samplingDecision == null) {
       samplingDecision = false;
     }
@@ -137,7 +150,7 @@ public class JaegerWavefrontPropagator implements Propagator<TextMap> {
     StringBuilder outCtx = new StringBuilder();
     outCtx.append(traceId.toString(16)).append(":").
         append(spanId.toString(16)).append(":").
-        append(parentId).append(":").
+        append(parentId.toString(16)).append(":").
         append(samplingDecision ? "1" : "0");
     return outCtx.toString();
   }

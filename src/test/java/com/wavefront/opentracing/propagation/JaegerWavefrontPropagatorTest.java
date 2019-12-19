@@ -5,6 +5,7 @@ import com.wavefront.opentracing.WavefrontSpanContext;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,18 +25,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JaegerWavefrontPropagatorTest {
 
+  private final String baggagePrefix = "uberctx-";
   private final String jaegerHeader = "uber-trace-id";
 
   JaegerWavefrontPropagator wfJaegerPropagator = new JaegerWavefrontPropagator.Builder().
-      withBaggagePrefix("uberctx-")
-      .withTraceIdHeader(jaegerHeader).build();
+      withBaggagePrefix(baggagePrefix).
+      withTraceIdHeader(jaegerHeader).
+      build();
 
 
   @Test
   public void testBuilder() {
-    JaegerWavefrontPropagator codec = new JaegerWavefrontPropagator.Builder()
-        .withTraceIdHeader(jaegerHeader)
-        .build();
+    JaegerWavefrontPropagator codec = new JaegerWavefrontPropagator.Builder().
+        withTraceIdHeader(jaegerHeader).
+        build();
     assertNotNull(codec);
   }
 
@@ -47,6 +50,19 @@ public class JaegerWavefrontPropagatorTest {
     WavefrontSpanContext ctx = wfJaegerPropagator.extract(headersTextMap);
     assertNotNull(ctx);
     assertEquals(ctx.getTraceId().toString(), "00000000-0000-0000-3871-de7e09c53ae8");
+    assertEquals(ctx.getSpanId().toString(), "00000000-0000-0000-7499-dd16d98ab60e");
+    assertEquals(ctx.getSamplingDecision(), true);
+  }
+
+  @Test
+  public void testTraceIdExtractEncoded() {
+    String val = "3871de7e09c53ae8%3A7499dd16d98ab60e%3A3771de7e09c55ae8%3A1";
+    DelegatingTextMap headersTextMap = new DelegatingTextMap();
+    headersTextMap.put(jaegerHeader, val);
+    WavefrontSpanContext ctx = wfJaegerPropagator.extract(headersTextMap);
+    assertNotNull(ctx);
+    assertEquals(ctx.getTraceId().toString(), "00000000-0000-0000-3871-de7e09c53ae8");
+    assertEquals(ctx.getSpanId().toString(), "00000000-0000-0000-7499-dd16d98ab60e");
     assertEquals(ctx.getSamplingDecision(), true);
   }
 
@@ -65,8 +81,22 @@ public class JaegerWavefrontPropagatorTest {
     DelegatingTextMap textMap = new DelegatingTextMap();
     UUID traceId = UUID.fromString("00000000-0000-0000-3871-de7e09c53ae8");
     UUID spanId = UUID.fromString("00000000-0000-0000-7499-dd16d98ab60e");
+    Map<String, String> baggage = new HashMap<>();
+    baggage.put("parent-id", "ef27b4b9-f6e9-46f5-ab2b-47bbb24746c5");
+    wfJaegerPropagator.inject(new WavefrontSpanContext(traceId, spanId, baggage, true), textMap);
+    assertTrue(textMap.containsKey(jaegerHeader));
+    assertEquals("3871de7e09c53ae8:7499dd16d98ab60e:ef27b4b9f6e946f5ab2b47bbb24746c5:1",
+        textMap.get(jaegerHeader));
+  }
+
+  @Test
+  public void testTraceIdInjectRoot() {
+    DelegatingTextMap textMap = new DelegatingTextMap();
+    UUID traceId = UUID.fromString("00000000-0000-0000-3871-de7e09c53ae8");
+    UUID spanId = UUID.fromString("00000000-0000-0000-7499-dd16d98ab60e");
     wfJaegerPropagator.inject(new WavefrontSpanContext(traceId, spanId, null, true), textMap);
     assertTrue(textMap.containsKey(jaegerHeader));
+    assertEquals("3871de7e09c53ae8:7499dd16d98ab60e:0:1", textMap.get(jaegerHeader));
   }
 
   @Test
