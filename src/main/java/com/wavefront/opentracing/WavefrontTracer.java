@@ -229,8 +229,12 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   boolean sample(String operationName, long traceId, long duration) {
+    return sample(operationName, traceId, duration, true);
+  }
+
+  boolean sample(String operationName, long traceId, long duration, boolean defaultValue) {
     if (samplers == null || samplers.isEmpty()) {
-      return true;
+      return defaultValue;
     }
     boolean earlySampling = (duration == 0);
     for (Sampler sampler : samplers) {
