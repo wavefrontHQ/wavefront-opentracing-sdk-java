@@ -4,14 +4,13 @@
 ## Table of Content
 * [Prerequisites](#Prerequisites)
 * [Usage](#Usage)
-  * [Application Tags](#1.SetUpApplicationTags)
-  * [WavefrontSender](#2.SetUpaWavefrontSender)
-  * [Reporter](#3.SetUpaReporter)
-  * [WavefrontTracer](#4.CreateaWavefrontTracer) 
-* [Span Logs](#SpanLogs)
-* [Cross Process Context Propagation](#CrossProcessContextPropagation)
-* [RED Metrics](#REDMetrics)
-* [Monitoring Your Application](#MonitoringtheSDK)
+  * [Application Tags](#1-Set-Up-Application-Tags)
+  * [WavefrontSender](#2-Set-Up-a-WavefrontSender)
+  * [Reporter](#3-Set-Up-a-Reporter)
+  * [WavefrontTracer](#4-Create-a-WavefrontTracer) 
+* [Cross Process Context Propagation](#Cross-Process-Context-Propagation)
+* [RED Metrics](#RED-Metrics)
+* [Monitoring the SDK](#Monitoring-the-SDK)
 * [License](#License)
 * [Join the Wavefront Community](#Join-the-Wavefront-Community)
 
@@ -152,10 +151,10 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) from your spans.
 
 Follow these steps to create a `WavefrontTracer`:
-1. [Create an `ApplicationTags` instance](#SetUpApplicationTags), which specifies metadata about your application.
-2. [Create a `WavefrontSender`](#SetUpaWavefrontSender) to send trace data to Wavefront.
-3. [Create a `WavefrontSpanReporter`](#SetUpaReporter) to report trace data to Wavefront.
-4. [Create the `WavefrontTracer` instance](#CreateaWavefrontTracer).
+1. [Create an `ApplicationTags` instance](#1-Set-Up-Application-Tags), which specifies metadata about your application.
+2. [Create a `WavefrontSender`](#2-Set-Up-a-WavefrontSender) to send trace data to Wavefront.
+3. [Create a `WavefrontSpanReporter`](#3-Set-Up-a-Reporter) to report trace data to Wavefront.
+4. [Create the `WavefrontTracer` instance](#4-Create-a-WavefrontTracer).
 
 The following code sample creates a Tracer. For the details of each step, see the sections below.
 
