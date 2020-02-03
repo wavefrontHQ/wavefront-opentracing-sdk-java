@@ -15,9 +15,9 @@
 * [Join the Wavefront Community](#Join-the-Wavefront-Community)
 
 # Welcome to Wavefront's OpenTracing Java SDK
-This is the Wavefront by VMware OpenTracing SDK for Java that provides open tracing support for Wavefront.
+This is the Wavefront by VMware OpenTracing SDK for Java that provides distributed tracing support for Wavefront.
 
-The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addition to the custom trace data and derived metrics. You can display the JVM metrics in a chart with the `ts(app-agent.jvm.*)`.
+The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addition to the custom trace data and derived metrics. You can display the JVM metrics in a chart with the `ts(app-agent.jvm.*)` query.
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
@@ -156,7 +156,7 @@ Follow these steps to create a `WavefrontTracer`:
 3. [Create a `WavefrontSpanReporter`](#3-Set-Up-a-Reporter) to report trace data to Wavefront.
 4. [Create the `WavefrontTracer` instance](#4-Create-a-WavefrontTracer).
 
-The following code sample creates a Tracer. For the details of each step, see the sections below.
+The following code sample creates a Tracer. For details on each step, see the sections below.
 
 ```java
 Tracer createWavefrontTracer(String application, String service) throws IOException {
@@ -182,23 +182,22 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
 
 Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront.
 
-You encapsulate application tags in an `ApplicationTags` object.
+You encapsulate application tags in an `ApplicationTags` object, which is imported from the Wavefront Java SDK.
 See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/apptags.md) for details.
 
 ### 2. Set Up a WavefrontSender
 
-A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
+A `WavefrontSender` object implements the low-level interface for sending data to Wavefront, which is imported from the Wavefront Java SDK. You can choose to send data using the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-* If you have already set up a `WavefrontSender` for another SDK that will run in the same JVM, use that one.  (For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#share-a-wavefrontsender).)
+* If you have already set up a `WavefrontSender` for another SDK that runs in the same JVM, use that one. (For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#share-a-wavefrontsender).)
 
-* Otherwise, follow the steps in [Set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
-
+* Otherwise, [set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
 
 ### 3. Set Up a Reporter
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print to the console.
 
 #### Create a WavefrontSpanReporter
-To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. You can optionally specify a string that represents the source for the reported spans. If you omit the source, the host name is automatically used.
+To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. Optionally, you can specify a string that represents the source for the reported spans. If you omit the source, the hostname is automatically used.
 
 To create a `WavefrontSpanReporter`:
 
@@ -213,7 +212,7 @@ Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
 //  To get the number of failures observed while reporting
 int totalFailures = wfSpanReporter.getFailureCount();
 ```
-**Note:** After you initialize the `WavefrontTracer` with the `WavefrontSpanReporter` (below), completed spans will automatically be reported to Wavefront.
+**Note:** After you initialize the `WavefrontTracer` with the `WavefrontSpanReporter` (below), completed spans are automatically reported to Wavefront.
 You do not need to start the reporter explicitly.
 
 
@@ -242,10 +241,10 @@ Tracer tracer = wfTracerBuilder.build();
 ```
 
 #### Sampling (Optional)
-You can optionally apply one or multiple sampling strategies to the `WavefrontTracer`. See the [sampling documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/sampling.md) for details.
+Optionally, you can apply one or multiple sampling strategies to the `WavefrontTracer`. See the [sampling documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/sampling.md) for details.
 
 #### Multi-valued Span Tags (Optional)
-You can optionally add metadata to OpenTracing spans in the form of multi-valued tags. The `WavefrontTracer` builder supports different methods to add those tags.
+Optionally, you can add metadata to OpenTracing spans in the form of multi-valued tags. The `WavefrontTracer` builder supports different methods to add those tags.
 
 ```java
 // Construct WavefrontTracer.Builder instance
@@ -275,15 +274,10 @@ tracer.close();
 
 You can instrument your application to emit one or more logs with a span, and examine the logs from the [Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
 
-[ADD CONTENT ON HOW TO DO IT]
+Use the [OpenTracing Span object’s log() method](https://javadoc.io/doc/io.opentracing/opentracing-api/latest/io/opentracing/Span.html#log-java.lang.String-) in your application.
 
 ## Cross Process Context Propagation
 See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
-
-[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master
-[ci]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java
-[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=604800
-[maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
 
 ## RED Metrics
 See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) for details on the out-of-the-box metrics and histograms that are provided.
