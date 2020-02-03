@@ -8,6 +8,7 @@
   * [WavefrontSender](#2-Set-Up-a-WavefrontSender)
   * [Reporter](#3-Set-Up-a-Reporter)
   * [WavefrontTracer](#4-Create-a-WavefrontTracer) 
+* [Span Logs](#Span-Logs)
 * [Cross Process Context Propagation](#Cross-Process-Context-Propagation)
 * [RED Metrics](#RED-Metrics)
 * [Monitoring the SDK](#Monitoring-the-SDK)
