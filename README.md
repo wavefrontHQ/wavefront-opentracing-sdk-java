@@ -152,7 +152,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) from your spans.
 
 Follow these steps to create a `WavefrontTracer`:
-1. [Create an `ApplicationTags` instance](#1-Set-Up-Application-Tags), which specifies metadata about your application.
+1. [Create an `ApplicationTags` instance](#1-Set-Up-Application-Tags), to specify metadata about your application.
 2. [Create a `WavefrontSender`](#2-Set-Up-a-WavefrontSender) to send trace data to Wavefront.
 3. [Create a `WavefrontSpanReporter`](#3-Set-Up-a-Reporter) to report trace data to Wavefront.
 4. [Create the `WavefrontTracer` instance](#4-Create-a-WavefrontTracer).
