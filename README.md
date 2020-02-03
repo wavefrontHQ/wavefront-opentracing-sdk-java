@@ -183,16 +183,16 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
 
 Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront.
 
-You encapsulate application tags in an `ApplicationTags` object, which is imported from the Wavefront Java SDK.
+You encapsulate application tags in an `ApplicationTags` object.
 See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/apptags.md) for details.
 
 ### 2. Set Up a WavefrontSender
 
-A `WavefrontSender` object implements the low-level interface for sending data to Wavefront, which is imported from the Wavefront Java SDK. You can choose to send data using the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
+A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data using the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
 * If you have already set up a `WavefrontSender` for another SDK that runs in the same JVM, use that one. (For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#share-a-wavefrontsender).)
 
-* Otherwise, [set Up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
+* Otherwise, [set up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
 
 ### 3. Set Up a Reporter
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print to the console.
