@@ -13,7 +13,7 @@
 * [RED Metrics](#RED-Metrics)
 * [Monitoring the SDK](#Monitoring-the-SDK)
 * [License](#License)
-* [Join the Wavefront Community](#Join-the-Wavefront-Community)
+* [How to Contribute](#How-to-Contribute)
 
 # Welcome to Wavefront's OpenTracing Java SDK
 This is the Wavefront by VMware OpenTracing SDK for Java that provides distributed tracing support for Wavefront.
@@ -24,21 +24,12 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 
 ![Java Tracing SDK Decision Tree](docs/Java-Tracing-SDK.png)
 
-<div style="background-color:#FCF8E3;color:black;padding:10px;">
-  <b><i>Note</i>: </br>This is the Wavefront by VMware's OpenTracing SDK for Java!</b>
-  If this SDK is not what you were looking for, see the <a href="#WavefrontSDK">table</a> given below.
-</div> 
-</br>
-<div style="background-color:#cee4f5;color:black;padding:10px;">
-  <ul>
-    <li>
-      Don't want to write code to instrument your application? Use the <a href="https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java">Wavefront Java Tracing Agent</a>.
-    </li>
-    <li>
-      See <a href="https://docs.wavefront.com/tracing_instrumenting_frameworks.html">instrument your application for tracing</a> for more information.
-    </li>
-  </ul>
-</div>
+> ***Note***:
+> </br>
+>   * **This is the Wavefront by VMware's OpenTracing SDK for Java!**
+>   If this SDK is not what you were looking for, see the [table](#WavefrontSDK) given below.
+>   * Don't want to write code to instrument your application? Use the [Wavefront Java Tracing Agent](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java).
+>   * See <a href="https://docs.wavefront.com/tracing_instrumenting_frameworks.html">instrument your application for tracing</a> for more information.
 
 #### Wavefront SDKs
 <table id="SDKlevels" style="width: 100%">
@@ -287,14 +278,14 @@ See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-ope
 See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that this SDK collects and reports to Wavefront.
 
 ## License
-[Apache 2.0 License](#License).
+[Apache 2.0 License](LICENSE).
 
 ## How to Contribute
 Want to contribute to this SDK on Github? Reach out to us with this good news! 
 
 * Contact Wavefront by VMware: wavefront@vmware.com
 * Slack: wavefront-public.slack.com
-* Join the [Wavefront community](https://communities.vmware.com/community/vmtn/wavefront/overview)
+* Join the [Wavefront community](https://communities.vmware.com/community/vmtn/wavefront/overview).
 * If you run into any issues, let us know by creating a Github issue in this repository.
 
 
