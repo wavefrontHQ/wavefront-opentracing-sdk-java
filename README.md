@@ -123,7 +123,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 ## Prerequisites
 
 * Java 8 or above.
-* If you are using Maven, add the following maven dependency to your `pom.xml`:
+* If you are using Maven, add the following maven dependency to your `pom.xml` file:
     ```
     <dependency>
       <groupId>com.wavefront</groupId>
@@ -182,7 +182,7 @@ A `WavefrontSender` object implements the low-level interface for sending data t
 * Otherwise, [set up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
 
 ### 3. Set Up a Reporter
-You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print to the console.
+You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print data to the console.
 
 #### Create a WavefrontSpanReporter
 To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. Optionally, you can specify a string that represents the source for the reported spans. If you omit the source, the hostname is automatically used.
@@ -200,8 +200,8 @@ Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
 //  To get the number of failures observed while reporting
 int totalFailures = wfSpanReporter.getFailureCount();
 ```
-**Note:** After you initialize the `WavefrontTracer` with the `WavefrontSpanReporter` (below), completed spans are automatically reported to Wavefront.
-You do not need to start the reporter explicitly.
+>**Note:** After you initialize the `WavefrontTracer` with the `WavefrontSpanReporter` (below), completed spans are automatically reported to Wavefront.
+>You do not need to start the reporter explicitly.
 
 
 #### Create a CompositeReporter (Optional)
@@ -260,7 +260,7 @@ tracer.close();
 
 ## Span Logs 
 
-You can instrument your application to emit one or more logs with a span, and examine the logs from the [Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
+You can instrument your application to emit logs or events with spans, and examine them from the [Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
 
 Use the [OpenTracing Span object’s log() method](https://javadoc.io/doc/io.opentracing/opentracing-api/latest/io/opentracing/Span.html#log-java.lang.String-) in your application.
 
@@ -277,12 +277,12 @@ See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefr
 [Apache 2.0 License](LICENSE).
 
 ## How to Contribute
-Want to contribute to this SDK on Github? Reach out to us with this good news! 
+Want to contribute to this SDK on GitHub? Reach out to us with this good news! 
 
 * Contact Wavefront by VMware: wavefront@vmware.com
 * Slack: wavefront-public.slack.com
 * Join the [Wavefront community](https://communities.vmware.com/community/vmtn/wavefront/overview).
-* If you run into any issues, let us know by creating a Github issue in this repository.
+* If you run into any issues, let us know by creating a GitHub issue in this repository.
 
 
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-jersey-sdk-java.svg?branch=master
