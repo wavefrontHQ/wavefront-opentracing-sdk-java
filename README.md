@@ -281,7 +281,6 @@ Want to contribute to this SDK on GitHub? Reach out to us with this good news!
 
 * Contact Wavefront by VMware: wavefront@vmware.com
 * Slack: wavefront-public.slack.com
-* Join the [Wavefront community](https://communities.vmware.com/community/vmtn/wavefront/overview).
 * If you run into any issues, let us know by creating a GitHub issue in this repository.
 
 
