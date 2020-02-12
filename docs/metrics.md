@@ -2,9 +2,9 @@
 
 To provide full [3D Observability](https://www.wavefront.com/wavefront-enhances-application-observability-with-distributed-tracing/) for your application, the `WavefrontTracer` collects and reports RED metrics based on the tracing spans it generates from your application. RED metrics are measures of:
 
-* Requests – the number of requests being served per second
-* Errors – the number of failed requests per second
-* Duration – per-minute histogram distributions of the amount of time that each request takes
+* Requests – the number of requests being served per second.
+* Errors – the number of failed requests per second.
+* Duration – per-minute histogram distributions of the amount of time that each request takes.
 
 The `WavefrontTracer` derives the RED metrics from your spans automatically, with no additional configuration or instrumentation on your part. To visualize these out-of-the-box metrics and histograms in Wavefront:
 

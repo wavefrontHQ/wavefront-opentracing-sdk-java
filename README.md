@@ -168,7 +168,7 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
 
 ### 1. Set Up Application Tags
 
-Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront.
+Application tags describe the structure of your application. They are included with every span reported to Wavefront and are associated with span tags that you can use to filter and query trace data in Wavefront.
 
 You encapsulate application tags in an `ApplicationTags` object.
 See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/apptags.md) for details.
@@ -177,9 +177,9 @@ See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk
 
 A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data using the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-* If you have already set up a `WavefrontSender` for another SDK that runs in the same JVM, use that one. (For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#share-a-wavefrontsender).)
+* If you have already set up a `WavefrontSender` for another SDK that runs in the same Java Virtual Machine (JVM), use that one. For details about sharing a `WavefrontSender` instance, see [Share a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/wavefrontsender.md#Share-a-WavefrontSender).
 
-* Otherwise, [set up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/sender.md#set-up-a-wavefrontsender).
+* Otherwise, [set up a WavefrontSender](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/wavefrontsender.md#wavefrontsender).
 
 ### 3. Set Up a Reporter
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print data to the console.
@@ -187,7 +187,7 @@ You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Opt
 #### Create a WavefrontSpanReporter
 To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. Optionally, you can specify a string that represents the source for the reported spans. If you omit the source, the hostname is automatically used.
 
-To create a `WavefrontSpanReporter`:
+Example: Create a `WavefrontSpanReporter`:
 
 ```java
 // Create a WavefrontProxyClient or WavefrontDirectIngestionClient
@@ -277,14 +277,12 @@ See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefr
 [Apache 2.0 License](LICENSE).
 
 ## How to Contribute
-Want to contribute to this SDK on GitHub? Reach out to us with this good news! 
 
-* Contact Wavefront by VMware: wavefront@vmware.com
-* Slack: wavefront-public.slack.com
-* If you run into any issues, let us know by creating a GitHub issue in this repository.
+* Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
+* If you run into any issues, let us know by creating a GitHub issue.
 
 
-[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-jersey-sdk-java.svg?branch=master
-[ci]: https://travis-ci.com/wavefrontHQ/wavefront-jersey-sdk-java
-[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-jersey-sdk-java.svg?maxAge=604800
-[maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-jersey-sdk-java
+[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java.svg?branch=master
+[ci]: https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-java
+[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-opentracing-sdk-java.svg?maxAge=604800
+[maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-opentracing-sdk-java
