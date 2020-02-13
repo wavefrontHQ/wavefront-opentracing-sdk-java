@@ -15,4 +15,4 @@ The list of the diagnostic metrics that are collected are given below:
 
 The above metrics are reported with the same source and application tags that are specified for your `WavefrontTracer` and `WavefrontSpanReporter`.
 
-For information regarding diagnostic metrics for your `WavefrontSender` instance, [see here](https://github.com/wavefrontHQ/wavefront-sdk-java/tree/master/docs/internal_metrics.md).
+For information regarding diagnostic metrics for your `WavefrontSender` instance, [see here](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/internalmetrics.md).
