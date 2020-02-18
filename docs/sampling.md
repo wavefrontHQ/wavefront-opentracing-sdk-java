@@ -1,10 +1,10 @@
 # Sampling
 
-A cloud-scale web application generates a very large number of traces. You can set up one or more sampling strategies in your application to reduce the volume of trace data that it sends to Wavefront.
+A cloud-scale web application generates a large number of traces. You can set up sampling strategies in your application to reduce the volume of trace data that it sends to Wavefront.
 
 You set up a sampling strategy by configuring the `WavefrontTracer` builder with an implementation of the `Sampler` interface.
 
-For example, suppose you want to report approximately 1 out of every 5 traces. The following snippet shows how to configure a `WavefrontTracer` with a `RateSampler`:
+For example, suppose you want to approximately report 1 out of every 5 traces to Wavefront. The following snippet shows how to configure a `WavefrontTracer` with a `RateSampler`:
 
 ```java
 // Create a WavefrontTracer builder
@@ -20,7 +20,7 @@ Tracer tracer = wfTracerBuilder.build();
 ```
 ## Supported Sampling Strategies
 
-The following table lists the supported sampling strategies. You create and configure a sampling strategy by configuring an `Sampler` implementation:
+The following table lists the supported sampling strategies. You create and configure a sampling strategy by configuring a `Sampler` implementation:
 
 | Sampler              | Description                            |
 | --------------------- | -------------------------------------- |
@@ -34,9 +34,6 @@ The following table lists the supported sampling strategies. You create and conf
 * Allows all error spans (`error=true` span tag).
 * Allows all spans that have a sampling priority greater than 0 (`sampling.priority` span tag).
 * Includes all spans in the [RED metrics](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/README.md#red-metrics) that are automatically collected and reported.
-
-
-
 
 ## Using Multiple Sampling Strategies
 
