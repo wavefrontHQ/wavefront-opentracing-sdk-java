@@ -27,7 +27,7 @@ The following table lists the supported sampling strategies. You create and conf
 | ConstantSampler       | Allows either all traces or no traces. Specify `true` to sample all traces, or `false` to sample no traces. |
 | DurationSampler       | Allows a span if its duration exceeds a specified threshold. Specify the duration threshold as a number of milliseconds. |
 | RateSampler           | Allows a specified probabilistic rate of traces to be reported. Specify the rate of allowed traces as a number between 0.0 and 1.0. |
-| CompositeSampler      | Delegates the sampling decision to multiple other samplers and allows a span if any delegate decides to allows it. Specify a list of samplers to delegate. |
+| CompositeSampler      | Delegates the sampling decision to multiple other samplers and allows a span if any delegate decides to allows it. Specify a list of samplers to delegate to. |
 
 
 **Note:** Regardless of the sampling strategy, the `WavefrontTracer`: 
@@ -39,7 +39,7 @@ The following table lists the supported sampling strategies. You create and conf
 
 You can configure a `WavefrontTracer` with multiple sampling strategies. To do so, you use a `CompositeSampler`, which delegates the sampling decision to multiple other samplers and decides to allow a span if any of the delegate samplers decide to allow it. 
 
-For instance, suppose you want to approximately report 10% of traces but you also don't want to lose any spans that are over 60 seconds long. The following code snippet shows how to configure a `WavefrontTracer` with a `RateSampler` and a `DurationSampler`:
+For instance, suppose you want to report approximately 10% of traces but you also don't want to lose any spans that are over 60 seconds long. The following code snippet shows how to configure a `WavefrontTracer` with a `RateSampler` and a `DurationSampler`:
 
 
 ```java

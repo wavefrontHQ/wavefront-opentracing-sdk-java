@@ -18,7 +18,7 @@
 # Welcome to Wavefront's OpenTracing Java SDK
 This is the Wavefront by VMware OpenTracing SDK for Java that provides distributed tracing support for Wavefront.
 
-The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addition to the custom trace data and derived metrics. You can display the JVM metrics in a chart with the `ts(app-agent.jvm.*)` query.
+The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom trace data, and derived metrics. You can display the JVM metrics in a chart using the query `ts(app-agent.jvm.*)`.
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
@@ -26,7 +26,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 
 > ***Note***:
 > </br>
->   * **This is the Wavefront by VMware's OpenTracing SDK for Java!**
+>   * **This is the Wavefront by VMware OpenTracing SDK for Java!**
 >   If this SDK is not what you were looking for, see the [table](#WavefrontSDK) given below.
 >   * Don't want to write code to instrument your application? Use the [Wavefront Java Tracing Agent](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java).
 >   * See <a href="https://docs.wavefront.com/tracing_instrumenting_frameworks.html">instrument your application for tracing</a> for more information.
@@ -41,7 +41,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics in addi
 
 <tr>
   <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-that-instrument-frameworks">OpenTracing SDK</a></td>
-  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives RED metrics from the reported spans. </td> 
+  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td> 
   <td>
     <ul>
     <li>
@@ -140,8 +140,8 @@ This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront
 
 Follow these steps to create a `WavefrontTracer`:
 1. [Create an `ApplicationTags` instance](#1-Set-Up-Application-Tags), to specify metadata about your application.
-2. [Create a `WavefrontSender`](#2-Set-Up-a-WavefrontSender) to send trace data to Wavefront.
-3. [Create a `WavefrontSpanReporter`](#3-Set-Up-a-Reporter) to report trace data to Wavefront.
+2. [Create a `WavefrontSender` instance](#2-Set-Up-a-WavefrontSender) to send trace data to Wavefront.
+3. [Create a `WavefrontSpanReporter` instance](#3-Set-Up-a-Reporter) to report trace data to Wavefront.
 4. [Create the `WavefrontTracer` instance](#4-Create-a-WavefrontTracer).
 
 The following code sample creates a Tracer. For details on each step, see the sections below.
@@ -185,7 +185,7 @@ A `WavefrontSender` object implements the low-level interface for sending data t
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. Optionally, you can create a `CompositeReporter` to send data to Wavefront and to print data to the console.
 
 #### Create a WavefrontSpanReporter
-To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. Optionally, you can specify a string that represents the source for the reported spans. If you omit the source, the hostname is automatically used.
+To build a `WavefrontSpanReporter`, you must specify a `WavefrontSender`. Optionally, you can specify a string that represents the source for the reported spans. If you omit the source, the host name is automatically used.
 
 Example: Create a `WavefrontSpanReporter`:
 
