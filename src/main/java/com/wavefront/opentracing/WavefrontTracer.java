@@ -45,6 +45,7 @@ import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
 import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
+import static io.opentracing.tag.Tags.SPAN_KIND;
 
 /**
  * The Wavefront OpenTracing tracer for sending distributed traces to Wavefront.
@@ -266,18 +267,18 @@ public class WavefrontTracer implements Tracer, Closeable {
       put(COMPONENT_TAG_KEY, span.getComponentTagValue());
     }};
 
-    boolean customTagMatch = false;
     // avoid iterating through the span tags if user has not instantiated any red-metric custom tags
     if (redMetricsCustomTagKeys.size() > 0) {
       Map<String, Collection<String>> spanTags = span.getTagsAsMap();
       for (String customTagKey : redMetricsCustomTagKeys) {
         if (spanTags.containsKey(customTagKey)) {
-          customTagMatch = true;
           // Assuming at least one value exists ...
           pointTags.put(customTagKey, spanTags.get(customTagKey).iterator().next());
         }
       }
     }
+    // span.kind tag will be promoted by default
+    pointTags.putIfAbsent(SPAN_KIND.getKey(), NULL_TAG_VAL);
 
     String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
         applicationTags.getApplication());
@@ -287,7 +288,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
 
     // Propagate custom tags to ~component.heartbeat
-    if (heartbeaterService != null && customTagMatch) {
+    if (heartbeaterService != null) {
       heartbeaterService.reportCustomTags(pointTags);
     }
 
@@ -496,6 +497,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     /**
      * Set custom RED metrics tags. If the span has any of the tags, then those get reported to
      * the span generated RED metrics.
+     * span.kind tag will be promoted by default.
      * Example - If you have a span tag of 'tenant-id', that you also want to be propagated to the
      * RED metrics then you would call this method and pass in 'tenant-id' to the set.
      * Caveat - ensure that redMetricsCustomTagKeys are low cardinality tags.
@@ -527,6 +529,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public WavefrontTracer build() {
       applyApplicationTags();
+      this.redMetricsCustomTagKeys.add(SPAN_KIND.getKey());
       return new WavefrontTracer(this);
     }
   }
