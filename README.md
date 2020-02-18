@@ -260,7 +260,7 @@ tracer.close();
 
 ## Span Logs 
 
-You can instrument your application to emit logs or events with spans, and examine them from the [Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
+You can instrument your application to emit logs or events with spans, and examine them from the [Wavefront Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
 
 Use the [OpenTracing Span object’s log() method](https://javadoc.io/doc/io.opentracing/opentracing-api/latest/io/opentracing/Span.html#log-java.lang.String-) in your application.
 
