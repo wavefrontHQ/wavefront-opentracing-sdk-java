@@ -35,7 +35,9 @@ public class WavefrontSpanTest {
   @Test
   public void testValidWavefrontSpan() throws IOException, InterruptedException {
     String operationName = "dummyOp";
-    Map<String, String> pointTags = pointTags(operationName, new HashMap<>());
+    Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
+      put("span.kind", "none");
+    }});
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
@@ -75,7 +77,9 @@ public class WavefrontSpanTest {
   @Test
   public void testErrorWavefrontSpan() throws IOException, InterruptedException {
     String operationName = "dummyOp";
-    Map<String, String> pointTags = pointTags(operationName, new HashMap<>());
+    Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
+      put("span.kind", "none");
+    }});
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
@@ -124,6 +128,7 @@ public class WavefrontSpanTest {
     Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
       put("tenant", "tenant1");
       put("env", "Staging");
+      put("span.kind", "server");
     }});
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
@@ -153,10 +158,9 @@ public class WavefrontSpanTest {
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).
-        redMetricsCustomTagKeys(new HashSet<>(Arrays.asList("tenant", "env"))).
-        build();
+        redMetricsCustomTagKeys(new HashSet<>(Arrays.asList("tenant", "env"))).build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
-        withTag("env", "Staging").start().finish();
+        withTag("env", "Staging").withTag("span.kind", "server").start().finish();
     // Sleep for 1 seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
@@ -167,7 +171,9 @@ public class WavefrontSpanTest {
   @Test
   public void testNoCustomRedMetricsTagsWavefrontSpan() throws IOException, InterruptedException {
     String operationName = "dummyOp";
-    Map<String, String> pointTags = pointTags(operationName, new HashMap<>());
+    Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
+      put("span.kind", "none");
+    }});
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
