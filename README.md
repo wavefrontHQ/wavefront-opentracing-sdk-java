@@ -27,7 +27,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 > ***Note***:
 > </br>
 >   * **This is the Wavefront by VMware OpenTracing SDK for Java!**
->   If this SDK is not what you were looking for, see the [table](#WavefrontSDK) given below.
+>   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) given below.
 >   * Don't want to write code to instrument your application? Use the [Wavefront Java Tracing Agent](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java).
 >   * See <a href="https://docs.wavefront.com/tracing_instrumenting_frameworks.html">instrument your application for tracing</a> for more information.
 
@@ -171,7 +171,7 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
 Application tags describe the structure of your application. They are included with every span reported to Wavefront and are associated with span tags that you can use to filter and query trace data in Wavefront.
 
 You encapsulate application tags in an `ApplicationTags` object.
-See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-java/blob/master/docs/apptags.md) for details.
+See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/applicationtags.md#application-tags) for details.
 
 ### 2. Set Up a WavefrontSender
 
