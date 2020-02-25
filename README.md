@@ -265,13 +265,13 @@ You can instrument your application to emit logs or events with spans, and exami
 Use the [OpenTracing Span object’s log() method](https://javadoc.io/doc/io.opentracing/opentracing-api/latest/io/opentracing/Span.html#log-java.lang.String-) in your application.
 
 ## Cross Process Context Propagation
-See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
+See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/contextpropagation.md#cross-process-context-propagation) for details on propagating span contexts across process boundaries.
 
 ## RED Metrics
 See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/common/metrics.md#red-metrics) for details on the out-of-the-box metrics and histograms that are provided.
 
 ## Monitoring the SDK
-See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that this SDK collects and reports to Wavefront.
+See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/internal_metrics.md#internal-diagnostic-metrics) for details on the internal metrics that this SDK collects and reports to Wavefront.
 
 ## License
 [Apache 2.0 License](LICENSE).
