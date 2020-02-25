@@ -72,6 +72,9 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
     <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-pyformance">Pyformance SDK</a>
     </li>
     <li>
+      <b>Go</b>: <a href ="https://github.com/wavefrontHQ/go-metrics-wavefront">Go Metrics SDK</a>
+      </li>
+    <li>
     <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-appmetrics-sdk-csharp">App Metrics SDK</a>
     </li>
     </ul>
