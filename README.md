@@ -22,7 +22,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
-![Java Tracing SDK Decision Tree](docs/Java-Tracing-SDK.png)
+![Java Tracing SDK Decision Tree](docs/java_tracing_sdk.png)
 
 > ***Note***:
 > </br>
@@ -40,7 +40,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 </tr>
 
 <tr>
-  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-that-instrument-frameworks">OpenTracing SDK</a></td>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-trace-data">OpenTracing SDK</a></td>
   <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td> 
   <td>
     <ul>
@@ -136,7 +136,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 ## Usage
 [Tracer](https://github.com/opentracing/specification/blob/master/specification.md#tracer) is an OpenTracing [interface](https://github.com/opentracing/opentracing-java#initialization) for creating spans and propagating them across arbitrary transports.
 
-This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) from your spans.
+This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/common/metrics.md#red-metrics) from your spans.
 
 Follow these steps to create a `WavefrontTracer`:
 1. [Create an `ApplicationTags` instance](#1-Set-Up-Application-Tags), to specify metadata about your application.
@@ -268,7 +268,7 @@ Use the [OpenTracing Span object’s log() method](https://javadoc.io/doc/io.ope
 See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
 
 ## RED Metrics
-See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/blob/master/docs/metrics.md) for details on the out-of-the-box metrics and histograms that are provided.
+See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/common/metrics.md#red-metrics) for details on the out-of-the-box metrics and histograms that are provided.
 
 ## Monitoring the SDK
 See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that this SDK collects and reports to Wavefront.
