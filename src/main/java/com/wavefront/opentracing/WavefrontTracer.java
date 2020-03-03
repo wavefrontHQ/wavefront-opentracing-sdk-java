@@ -280,14 +280,18 @@ public class WavefrontTracer implements Tracer, Closeable {
     // span.kind tag will be promoted by default
     pointTags.putIfAbsent(SPAN_KIND.getKey(), NULL_TAG_VAL);
 
-    String application = overrideWithSingleValuedSpanTag(span, pointTags, APPLICATION_TAG_KEY,
+    String application = getSingleValuedTagValueOrDefault(span, APPLICATION_TAG_KEY,
         applicationTags.getApplication());
-    String service = overrideWithSingleValuedSpanTag(span, pointTags, SERVICE_TAG_KEY,
+    String service = getSingleValuedTagValueOrDefault(span, SERVICE_TAG_KEY,
         applicationTags.getService());
-    overrideWithSingleValuedSpanTag(span, pointTags, CLUSTER_TAG_KEY, applicationTags.getCluster());
-    overrideWithSingleValuedSpanTag(span, pointTags, SHARD_TAG_KEY, applicationTags.getShard());
+    pointTags.put(APPLICATION_TAG_KEY, application);
+    pointTags.put(SERVICE_TAG_KEY, service);
+    pointTags.put(CLUSTER_TAG_KEY, getSingleValuedTagValueOrDefault(span, CLUSTER_TAG_KEY,
+        applicationTags.getCluster()));
+    pointTags.put(SHARD_TAG_KEY, getSingleValuedTagValueOrDefault(span, SHARD_TAG_KEY,
+        applicationTags.getShard()));
 
-    // Propagate custom tags to ~component.heartbeat
+    // Propagate span.kind and any custom tags to ~component.heartbeat
     if (heartbeaterService != null) {
       heartbeaterService.reportCustomTags(pointTags);
     }
@@ -315,17 +319,10 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
   }
 
-  private String overrideWithSingleValuedSpanTag(WavefrontSpan span, Map<String, String> pointTags,
-                                                 String key, String defaultValue) {
+  private String getSingleValuedTagValueOrDefault(WavefrontSpan span, String key,
+                                                  String defaultValue) {
     String spanTagValue = span.getSingleValuedTagValue(key);
-    if (spanTagValue == null) {
-      return defaultValue;
-    }
-    // If span tag value is different from the default, we need to override the point tag
-    if (!spanTagValue.equals(defaultValue)) {
-      pointTags.put(key, spanTagValue);
-    }
-    return spanTagValue;
+    return spanTagValue == null ? defaultValue : spanTagValue;
   }
 
   private String sanitize(String s) {
