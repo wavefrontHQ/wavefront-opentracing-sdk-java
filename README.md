@@ -1,4 +1,4 @@
-# wavefront-opentracing-sdk-java 
+# wavefront-opentracing-sdk-java
 [![build status][ci-img]][ci] [![Released Version][maven-img]][maven] [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
 
 ## Table of Content
@@ -7,7 +7,7 @@
   * [Application Tags](#1-Set-Up-Application-Tags)
   * [WavefrontSender](#2-Set-Up-a-WavefrontSender)
   * [Reporter](#3-Set-Up-a-Reporter)
-  * [WavefrontTracer](#4-Create-a-WavefrontTracer) 
+  * [WavefrontTracer](#4-Create-a-WavefrontTracer)
 * [Span Logs](#Span-Logs)
 * [Cross Process Context Propagation](#Cross-Process-Context-Propagation)
 * [RED Metrics](#RED-Metrics)
@@ -41,7 +41,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 
 <tr>
   <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-trace-data">OpenTracing SDK</a></td>
-  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td> 
+  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td>
   <td>
     <ul>
     <li>
@@ -62,7 +62,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 
 <tr>
   <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-metrics-and-histograms">Metrics SDK</a></td>
-  <td align="justify">Implements a standard metrics library. Lets you define, collect, and report custom business metrics and histograms from any part of your application code.   </td> 
+  <td align="justify">Implements a standard metrics library. Lets you define, collect, and report custom business metrics and histograms from any part of your application code.   </td>
   <td>
     <ul>
     <li>
@@ -88,7 +88,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
     <ul>
     <li><b>Java</b>:
     <a href="https://github.com/wavefrontHQ/wavefront-dropwizard-sdk-java">Dropwizard</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-gRPC-sdk-java">gRPC</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jaxrs-sdk-java">JAX-RS</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jersey-sdk-java">Jersey</a></li>
-    <li><b>.Net/C#</b>: 
+    <li><b>.Net/C#</b>:
     <a href="https://github.com/wavefrontHQ/wavefront-aspnetcore-sdk-csharp">ASP.Net core</a> </li>
     <!--- [Python](wavefront_sdks_python.html#python-sdks-that-instrument-frameworks) --->
     </ul>
@@ -97,7 +97,7 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 
 <tr>
   <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-sending-raw-data-to-wavefront">Sender SDK</a></td>
-  <td align="justify">Lets you send raw values to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront. 
+  <td align="justify">Lets you send raw values to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront.
   </td>
   <td>
     <ul>
@@ -121,8 +121,8 @@ The Wavefront OpenTracing SDK for Java automatically reports JVM metrics, custom
 </tr>
 
 </tbody>
-</table> 
- 
+</table>
+
 ## Prerequisites
 
 * Java 8 or above.
@@ -151,18 +151,18 @@ The following code sample creates a Tracer. For details on each step, see the se
 
 ```java
 Tracer createWavefrontTracer(String application, String service) throws IOException {
-  // Step 1. Create ApplicationTags. 
+  // Step 1. Create ApplicationTags.
   ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
-  
+
   // Step 2. Create a WavefrontSender for sending trace data via a Wavefront proxy.
   //         Assume you have installed and started the proxy on <proxyHostname>.
   WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
-        metricsPort(2878).tracingPort(30000).build();
-        
+        metricsPort(2878).distributionPort(2878).tracingPort(30000).build();
+
   // Step 3. Create a WavefrontSpanReporter for reporting trace data that originates on <sourceName>.
   Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
         withSource(<sourceName>).build(wavefrontSender);
-        
+
   // Step 4. Create the WavefrontTracer.
   return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
 }
@@ -261,7 +261,9 @@ Always close the tracer before exiting your application to flush all buffered sp
 tracer.close();
 ```
 
-## Span Logs 
+## Span Logs
+
+> **Note**: Span logs are disabled by default and require Wavefront proxy version 5.0 or later. Contact [support@wavefront.com](mailto:support@wavefront.com) to enable the feature.
 
 You can instrument your application to emit logs or events with spans, and examine them from the [Wavefront Tracing UI](https://docs.wavefront.com/tracing_ui_overview.html#drill-down-into-spans-and-view-metrics-and-span-logs).
 
