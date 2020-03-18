@@ -283,6 +283,7 @@ public class WavefrontTracer implements Tracer, Closeable {
         applicationTags.getCluster()));
     pointTags.put(SHARD_TAG_KEY, getSingleValuedTagValueOrDefault(span, SHARD_TAG_KEY,
         applicationTags.getShard()));
+    pointTags.put(COMPONENT_TAG_KEY, span.getComponentTagValue());
 
     // propagate http status if the span has error
     if (spanTags.containsKey(HTTP_STATUS.getKey()) && span.isError()) {
@@ -293,11 +294,10 @@ public class WavefrontTracer implements Tracer, Closeable {
       heartbeaterService.reportCustomTags(new HashMap<>(pointTags));
     }
 
-    // Add operation and component tag after sending RED heartbeat.
+    // Add operation tag after sending RED heartbeat.
     // Need to sanitize metric name as application, service and operation names can have spaces
     // and other invalid metric name characters
     pointTags.put(OPERATION_NAME_TAG, span.getOperationName());
-    pointTags.put(COMPONENT_TAG_KEY, span.getComponentTagValue());
 
     String metricNamePrefix = application + "." + service + "." + span.getOperationName();
     if (span.isError()) {
