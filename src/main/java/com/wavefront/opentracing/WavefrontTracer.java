@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import com.wavefront.internal.SpanDerivedMetricsUtils;
+
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -62,6 +64,8 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final List<Pair<String, String>> tags;
   private final List<Sampler> samplers;
 
+  @Nullable
+  private final WavefrontSpanReporter wfSpanReporter;
   @Nullable
   private final WavefrontInternalReporter wfInternalReporter;
   @Nullable
@@ -99,7 +103,7 @@ public class WavefrontTracer implements Tracer, Closeable {
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
      * only if you use the WavefrontSpanReporter
      */
-    WavefrontSpanReporter wfSpanReporter = getWavefrontSpanReporter(reporter);
+    wfSpanReporter = getWavefrontSpanReporter(reporter);
     if (wfSpanReporter != null) {
       Tuple tuple = instantiateWavefrontStatsReporter(wfSpanReporter, builder.applicationTags,
           builder.includeJvmMetrics);
@@ -168,7 +172,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     WavefrontInternalReporter wfDerivedReporter = new WavefrontInternalReporter.Builder().
         prefixedWith("tracing.derived").withSource(wfSpanReporter.getSource()).
         withReporterPointTags(pointTags).reportMinuteDistribution().
-            build(wfSpanReporter.getWavefrontSender());
+        build(wfSpanReporter.getWavefrontSender());
     // Start the derived metrics reporter
     wfDerivedReporter.start(reportFrequencyMillis.get(), TimeUnit.MILLISECONDS);
 
@@ -182,7 +186,7 @@ public class WavefrontTracer implements Tracer, Closeable {
 
     HeartbeaterService heartbeaterService = new HeartbeaterService(
         wfSpanReporter.getWavefrontSender(), applicationTags,
-            Arrays.asList(WAVEFRONT_GENERATED_COMPONENT, OPENTRACING_COMPONENT, JAVA_COMPONENT),
+        Arrays.asList(WAVEFRONT_GENERATED_COMPONENT, OPENTRACING_COMPONENT, JAVA_COMPONENT),
         wfSpanReporter.getSource());
     return new Tuple(wfInternalReporter, wfDerivedReporter, wfJvmReporter, heartbeaterService);
   }
@@ -257,71 +261,28 @@ public class WavefrontTracer implements Tracer, Closeable {
   }
 
   void reportWavefrontGeneratedData(WavefrontSpan span) {
-    if (wfDerivedReporter == null) {
+    if (wfSpanReporter == null || wfDerivedReporter == null) {
       // WavefrontSpanReporter not set, so no tracing spans will be reported as metrics/histograms.
       return;
     }
-    Map<String, String> pointTags = new HashMap<>();
-    Map<String, Collection<String>> spanTags = span.getTagsAsMap();
-    if (redMetricsCustomTagKeys.size() > 0) {
-      for (String customTagKey : redMetricsCustomTagKeys) {
-        if (spanTags.containsKey(customTagKey)) {
-          // Assuming at least one value exists ...
-          pointTags.put(customTagKey, spanTags.get(customTagKey).iterator().next());
-        }
-      }
-    }
-    // span.kind tag will be promoted by default
-    pointTags.putIfAbsent(SPAN_KIND.getKey(), NULL_TAG_VAL);
-    String application = getSingleValuedTagValueOrDefault(span, APPLICATION_TAG_KEY,
-        applicationTags.getApplication());
-    String service = getSingleValuedTagValueOrDefault(span, SERVICE_TAG_KEY,
-        applicationTags.getService());
-    pointTags.put(APPLICATION_TAG_KEY, application);
-    pointTags.put(SERVICE_TAG_KEY, service);
-    pointTags.put(CLUSTER_TAG_KEY, getSingleValuedTagValueOrDefault(span, CLUSTER_TAG_KEY,
-        applicationTags.getCluster()));
-    pointTags.put(SHARD_TAG_KEY, getSingleValuedTagValueOrDefault(span, SHARD_TAG_KEY,
-        applicationTags.getShard()));
-    pointTags.put(COMPONENT_TAG_KEY, span.getComponentTagValue());
 
-    // propagate http status if the span has error
-    if (spanTags.containsKey(HTTP_STATUS.getKey()) && span.isError()) {
-      pointTags.put(HTTP_STATUS.getKey(), spanTags.get(HTTP_STATUS.getKey()).iterator().next());
-    }
-    // Propagate span.kind and any custom tags to ~component.heartbeat
+    Pair<Map<String, String>, String> heartbeatMetricKey =
+        SpanDerivedMetricsUtils.reportWavefrontGeneratedData(
+            wfDerivedReporter,
+            span.getOperationName(),
+            getSingleValuedTagValueOrDefault(span, APPLICATION_TAG_KEY, applicationTags.getApplication()),
+            getSingleValuedTagValueOrDefault(span, SERVICE_TAG_KEY, applicationTags.getService()),
+            getSingleValuedTagValueOrDefault(span, CLUSTER_TAG_KEY, applicationTags.getCluster()),
+            getSingleValuedTagValueOrDefault(span, SHARD_TAG_KEY, applicationTags.getCluster()),
+            wfSpanReporter.getSource(),
+            span.getComponentTagValue(),
+            span.isError(),
+            span.getDurationMicroseconds(),
+            redMetricsCustomTagKeys,
+            span.getTagsAsList()
+        );
     if (heartbeaterService != null) {
-      heartbeaterService.reportCustomTags(new HashMap<>(pointTags));
-    }
-
-    // Add operation tag after sending RED heartbeat.
-    // Need to sanitize metric name as application, service and operation names can have spaces
-    // and other invalid metric name characters
-    pointTags.put(OPERATION_NAME_TAG, span.getOperationName());
-
-    String metricNamePrefix = application + "." + service + "." + span.getOperationName();
-    if (span.isError()) {
-      wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + ERROR_SUFFIX),
-          pointTags)).inc();
-    }
-
-    // Remove http error status before sending request and duration metrics
-    pointTags.remove(HTTP_STATUS.getKey());
-    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
-        pointTags)).inc();
-    long spanDurationMicros = span.getDurationMicroseconds();
-    // Convert from micros to millis and add to duration counter
-    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
-        pointTags)).inc(spanDurationMicros / 1000);
-    // Support duration in microseconds instead of milliseconds
-    if (span.isError()) {
-      Map<String, String> errorPointTags = new HashMap<>(pointTags);
-      errorPointTags.put("error", "true");
-      wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
-          errorPointTags)).update(spanDurationMicros);
-    } else {
-      wfDerivedReporter.newWavefrontHistogram(new MetricName(sanitize(metricNamePrefix + DURATION_SUFFIX),
-          pointTags)).update(spanDurationMicros);
+      heartbeaterService.reportCustomTags(heartbeatMetricKey._1);
     }
   }
 
@@ -393,7 +354,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     /**
      * Global tag included with every reported span.
      *
-     * @param key the tag key
+     * @param key   the tag key
      * @param value the tag value
      * @return {@code this}
      */
@@ -452,10 +413,9 @@ public class WavefrontTracer implements Tracer, Closeable {
     /**
      * Sampler for sampling traces.
      *
-     * Samplers can be chained by calling this method multiple times. Sampling decisions are
-     * OR'd when multiple samplers are used.
+     * Samplers can be chained by calling this method multiple times. Sampling decisions are OR'd
+     * when multiple samplers are used.
      *
-     * @param sampler
      * @return {@code this}
      */
     public Builder withSampler(Sampler sampler) {
@@ -466,7 +426,6 @@ public class WavefrontTracer implements Tracer, Closeable {
     /**
      * Scope manager to use for span management.
      *
-     * @param scopeManager
      * @return {@code this}
      */
     public Builder withScopeManager(ScopeManager scopeManager) {
@@ -487,9 +446,9 @@ public class WavefrontTracer implements Tracer, Closeable {
     /**
      * Register custom propagator to support various formats.
      *
-     * @param format {@link Format}
+     * @param format     {@link Format}
      * @param propagator {@link Propagator}
-     * @param <T> describes format type
+     * @param <T>        describes format type
      * @return {@code this}
      */
     public <T> Builder registerPropagator(Format<T> format, Propagator<T> propagator) {
@@ -498,15 +457,14 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
 
     /**
-     * Set custom RED metrics tags. If the span has any of the tags, then those get reported to
-     * the span generated RED metrics.
-     * span.kind tag will be promoted by default.
-     * Example - If you have a span tag of 'tenant-id', that you also want to be propagated to the
-     * RED metrics then you would call this method and pass in 'tenant-id' to the set.
-     * Caveat - ensure that redMetricsCustomTagKeys are low cardinality tags.
+     * Set custom RED metrics tags. If the span has any of the tags, then those get reported to the
+     * span generated RED metrics. span.kind tag will be promoted by default. Example - If you have
+     * a span tag of 'tenant-id', that you also want to be propagated to the RED metrics then you
+     * would call this method and pass in 'tenant-id' to the set. Caveat - ensure that
+     * redMetricsCustomTagKeys are low cardinality tags.
      *
-     * @param redMetricsCustomTagKeys set of custom tags you want to report for the span-generated RED
-     *                             metrics.
+     * @param redMetricsCustomTagKeys set of custom tags you want to report for the span-generated
+     *                                RED metrics.
      * @return {@code this}
      */
     public Builder redMetricsCustomTagKeys(Set<String> redMetricsCustomTagKeys) {

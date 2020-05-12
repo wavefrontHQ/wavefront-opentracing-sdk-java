@@ -96,7 +96,9 @@
         <dependency>
             <groupId>com.wavefront</groupId>
             <artifactId>wavefront-runtime-sdk-jvm</artifactId>
-            <version>0.9.10</version>
+            <!-- TODO: Remove SNAPSHOT after released -->
+            <!-- <version>0.9.11</version> -->
+            <version>0.9.11-SNAPSHOT</version>
         </dependency>
         <!-- Test Dependencies -->
         <dependency>
