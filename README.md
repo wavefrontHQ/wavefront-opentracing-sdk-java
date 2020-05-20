@@ -254,6 +254,13 @@ wfTracerBuilder.withGlobalMultiValuedTags(new HashMap<String, Collection<String>
 // Construct Wavefront opentracing Tracer
 Tracer tracer = wfTracerBuilder.build();
 ```
+#### Add Custom Span-Level RED metrics
+
+Optionally, you can add custom span-level tags to propagate RED metrics. See [Custom Span-Level Tags for RED Metrics](https://docs.wavefront.com/trace_data_details.html#custom-span-level-tags-for-red-metrics) for details.
+
+```java
+wfTracerBuilder.redMetricsCustomTagKeys(new HashSet<String>(Arrays.asList("env", "location")));
+```
 
 #### Close the Tracer
 Always close the tracer before exiting your application to flush all buffered spans to Wavefront.
