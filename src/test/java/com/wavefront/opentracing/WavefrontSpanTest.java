@@ -80,6 +80,10 @@ public class WavefrontSpanTest {
     Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
       put("span.kind", "none");
     }});
+    Map<String, String> errorTags = pointTags(operationName, new HashMap<String, String>() {{
+      put("span.kind", "none");
+      put("http.status_code", "404");
+    }});
     WavefrontSender wfSender = createMock(WavefrontSender.class);
     wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
         anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
@@ -93,7 +97,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendMetric(eq(
         "tracing.derived.myApplication.myService.dummyOp.error.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(errorTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -114,7 +118,7 @@ public class WavefrontSpanTest {
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).build();
     tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), true).
-        start().finish();
+        withTag("http.status_code", "404").start().finish();
     // Sleep for 60+ seconds
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);

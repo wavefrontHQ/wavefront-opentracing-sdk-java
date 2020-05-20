@@ -46,6 +46,7 @@ import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
 import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 import static io.opentracing.tag.Tags.SPAN_KIND;
+import static io.opentracing.tag.Tags.HTTP_STATUS;
 
 /**
  * The Wavefront OpenTracing tracer for sending distributed traces to Wavefront.
@@ -260,16 +261,9 @@ public class WavefrontTracer implements Tracer, Closeable {
       // WavefrontSpanReporter not set, so no tracing spans will be reported as metrics/histograms.
       return;
     }
-    // Need to sanitize metric name as application, service and operation names can have spaces
-    // and other invalid metric name characters
-    Map<String, String> pointTags = new HashMap<String, String>() {{
-      put(OPERATION_NAME_TAG, span.getOperationName());
-      put(COMPONENT_TAG_KEY, span.getComponentTagValue());
-    }};
-
-    // avoid iterating through the span tags if user has not instantiated any red-metric custom tags
+    Map<String, String> pointTags = new HashMap<>();
+    Map<String, Collection<String>> spanTags = span.getTagsAsMap();
     if (redMetricsCustomTagKeys.size() > 0) {
-      Map<String, Collection<String>> spanTags = span.getTagsAsMap();
       for (String customTagKey : redMetricsCustomTagKeys) {
         if (spanTags.containsKey(customTagKey)) {
           // Assuming at least one value exists ...
@@ -279,7 +273,6 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
     // span.kind tag will be promoted by default
     pointTags.putIfAbsent(SPAN_KIND.getKey(), NULL_TAG_VAL);
-
     String application = getSingleValuedTagValueOrDefault(span, APPLICATION_TAG_KEY,
         applicationTags.getApplication());
     String service = getSingleValuedTagValueOrDefault(span, SERVICE_TAG_KEY,
@@ -290,19 +283,32 @@ public class WavefrontTracer implements Tracer, Closeable {
         applicationTags.getCluster()));
     pointTags.put(SHARD_TAG_KEY, getSingleValuedTagValueOrDefault(span, SHARD_TAG_KEY,
         applicationTags.getShard()));
+    pointTags.put(COMPONENT_TAG_KEY, span.getComponentTagValue());
 
+    // propagate http status if the span has error
+    if (spanTags.containsKey(HTTP_STATUS.getKey()) && span.isError()) {
+      pointTags.put(HTTP_STATUS.getKey(), spanTags.get(HTTP_STATUS.getKey()).iterator().next());
+    }
     // Propagate span.kind and any custom tags to ~component.heartbeat
     if (heartbeaterService != null) {
-      heartbeaterService.reportCustomTags(pointTags);
+      heartbeaterService.reportCustomTags(new HashMap<>(pointTags));
     }
 
+    // Add operation tag after sending RED heartbeat.
+    // Need to sanitize metric name as application, service and operation names can have spaces
+    // and other invalid metric name characters
+    pointTags.put(OPERATION_NAME_TAG, span.getOperationName());
+
     String metricNamePrefix = application + "." + service + "." + span.getOperationName();
-    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
-        pointTags)).inc();
     if (span.isError()) {
       wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + ERROR_SUFFIX),
           pointTags)).inc();
     }
+
+    // Remove http error status before sending request and duration metrics
+    pointTags.remove(HTTP_STATUS.getKey());
+    wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + INVOCATION_SUFFIX),
+        pointTags)).inc();
     long spanDurationMicros = span.getDurationMicroseconds();
     // Convert from micros to millis and add to duration counter
     wfDerivedReporter.newCounter(new MetricName(sanitize(metricNamePrefix + TOTAL_TIME_SUFFIX),
