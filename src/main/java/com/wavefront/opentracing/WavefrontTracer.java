@@ -1,7 +1,6 @@
 package com.wavefront.opentracing;
 
 import com.wavefront.internal.reporter.WavefrontInternalReporter;
-import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
 import com.wavefront.opentracing.reporting.CompositeReporter;
@@ -43,12 +42,10 @@ import io.opentracing.util.ThreadLocalScopeManager;
 
 import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
-import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
 import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 import static io.opentracing.tag.Tags.SPAN_KIND;
-import static io.opentracing.tag.Tags.HTTP_STATUS;
 
 /**
  * The Wavefront OpenTracing tracer for sending distributed traces to Wavefront.
@@ -83,11 +80,6 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
   private final static String OPENTRACING_COMPONENT = "opentracing";
   private final static String JAVA_COMPONENT = "java";
-  private final static String INVOCATION_SUFFIX = ".invocation";
-  private final static String ERROR_SUFFIX = ".error";
-  private final static String TOTAL_TIME_SUFFIX = ".total_time.millis";
-  private final static String DURATION_SUFFIX = ".duration.micros";
-  private final static String OPERATION_NAME_TAG = "operationName";
 
   private WavefrontTracer(Builder builder) {
     scopeManager = builder.scopeManager;
@@ -279,7 +271,8 @@ public class WavefrontTracer implements Tracer, Closeable {
             span.isError(),
             span.getDurationMicroseconds(),
             redMetricsCustomTagKeys,
-            span.getTagsAsList()
+            span.getTagsAsList(),
+            false
         );
     if (heartbeaterService != null) {
       heartbeaterService.reportCustomTags(heartbeatMetricKey._1);
@@ -290,16 +283,6 @@ public class WavefrontTracer implements Tracer, Closeable {
                                                   String defaultValue) {
     String spanTagValue = span.getSingleValuedTagValue(key);
     return spanTagValue == null ? defaultValue : spanTagValue;
-  }
-
-  private String sanitize(String s) {
-    final String whitespaceSanitized = WHITESPACE.matcher(s).replaceAll("-");
-    if (s.contains("\"") || s.contains("'")) {
-      // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
-      return whitespaceSanitized.replaceAll("\"", "\\\\\"");
-    } else {
-      return whitespaceSanitized;
-    }
   }
 
   void reportSpan(WavefrontSpan span) {
