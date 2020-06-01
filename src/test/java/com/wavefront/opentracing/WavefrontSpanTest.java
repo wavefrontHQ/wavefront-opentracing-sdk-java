@@ -79,6 +79,7 @@ public class WavefrontSpanTest {
     String operationName = "dummyOp";
     Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
       put("span.kind", "none");
+      put("http.status_code", "404");
     }});
     Map<String, String> errorTags = pointTags(operationName, new HashMap<String, String>() {{
       put("span.kind", "none");
@@ -222,6 +223,7 @@ public class WavefrontSpanTest {
       put("service", "myService");
       put("cluster", "none");
       put("shard", "none");
+      put("source", "wavefront-tracer");
       put("component", "none");
       put("operationName", operationName);
       putAll(customTags);
