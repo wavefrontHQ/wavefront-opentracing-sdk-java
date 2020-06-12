@@ -254,4 +254,13 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
     // flush buffer & close client
     wavefrontSender.close();
   }
+
+  @Override
+  public void flush() {
+    try {
+      wavefrontSender.flush();
+    } catch (IOException e) {
+      logger.warning("WavefrontSender flush() failed.");
+    }
+  }
 }

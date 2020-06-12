@@ -271,8 +271,7 @@ public class WavefrontTracer implements Tracer, Closeable {
             span.isError(),
             span.getDurationMicroseconds(),
             redMetricsCustomTagKeys,
-            span.getTagsAsList(),
-            false
+            span.getTagsAsList()
         );
     if (heartbeaterService != null) {
       heartbeaterService.reportCustomTags(heartbeatMetricKey._1);
@@ -480,6 +479,7 @@ public class WavefrontTracer implements Tracer, Closeable {
 
   @Override
   public void close() {
+    this.flush();
     try {
       this.reporter.close();
     } catch (IOException e) {
@@ -497,6 +497,25 @@ public class WavefrontTracer implements Tracer, Closeable {
     }
     if (heartbeaterService != null) {
       heartbeaterService.close();
+    }
+  }
+
+  /**
+   * Flush data inside reporters.
+   */
+  public void flush() {
+    this.reporter.flush();
+
+    if (wfInternalReporter != null) {
+      wfInternalReporter.report();
+    }
+
+    if (wfDerivedReporter != null) {
+      wfDerivedReporter.report();
+    }
+
+    if (wfJvmReporter != null) {
+      wfJvmReporter.report();
     }
   }
 }

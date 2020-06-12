@@ -68,4 +68,9 @@ public class ConsoleReporter implements Reporter {
   public void close() {
     // no-op
   }
+
+  @Override
+  public void flush() {
+    // no-op
+  }
 }

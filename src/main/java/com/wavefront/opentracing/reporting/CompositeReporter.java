@@ -49,4 +49,11 @@ public class CompositeReporter implements Reporter {
       reporter.close();
     }
   }
+
+  @Override
+  public void flush() {
+    for (Reporter reporter : reporters) {
+      reporter.flush();
+    }
+  }
 }
