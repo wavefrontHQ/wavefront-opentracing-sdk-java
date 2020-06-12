@@ -17,6 +17,7 @@ import io.opentracing.tag.Tags;
 
 import static com.wavefront.opentracing.Utils.buildApplicationTags;
 import static com.wavefront.opentracing.common.Constants.DEFAULT_SOURCE;
+import static org.easymock.EasyMock.anyDouble;
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
@@ -44,9 +45,14 @@ public class WavefrontSpanTest {
         anyObject(), eq(Collections.emptyList()));
     expectLastCall();
 
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
     wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        "~component.heartbeat"),
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -57,9 +63,9 @@ public class WavefrontSpanTest {
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
 
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -92,13 +98,18 @@ public class WavefrontSpanTest {
     expectLastCall();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        "~component.heartbeat"),
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
     expectLastCall().atLeastOnce();
 
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.error.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(errorTags));
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.error.count"),
+        anyDouble(), eq(DEFAULT_SOURCE), eq(errorTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -109,9 +120,9 @@ public class WavefrontSpanTest {
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
 
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -142,8 +153,13 @@ public class WavefrontSpanTest {
     expectLastCall();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        "~component.heartbeat"),
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -154,9 +170,9 @@ public class WavefrontSpanTest {
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
 
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -186,8 +202,13 @@ public class WavefrontSpanTest {
     expectLastCall();
 
     wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        eq(1.0), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        "~component.heartbeat"),
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
+        anyDouble(),  eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -198,9 +219,9 @@ public class WavefrontSpanTest {
         eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().anyTimes();
 
-    wfSender.sendMetric(eq(
-        "tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+    wfSender.sendDeltaCounter(eq(
+        "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
+        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
