@@ -2,6 +2,7 @@ package com.wavefront.opentracing.reporting;
 
 import com.wavefront.opentracing.WavefrontSpan;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -9,7 +10,7 @@ import java.io.IOException;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
-public interface Reporter {
+public interface Reporter extends Closeable {
 
   /**
    * Report opentracing span to Wavefront
@@ -32,4 +33,9 @@ public interface Reporter {
    * @throws IOException
    */
   void close() throws IOException;
+
+  /**
+   * Flush the data of reporter.
+   */
+  void flush();
 }
