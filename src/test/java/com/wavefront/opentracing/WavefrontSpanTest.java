@@ -177,8 +177,7 @@ public class WavefrontSpanTest {
     replay(wfSender);
     WavefrontTracer tracer = new WavefrontTracer.Builder(
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
-        buildApplicationTags()).setReportFrequenceMillis(50).
-        withSampler(new RateSampler(0.0)).build();
+        buildApplicationTags()).setReportFrequenceMillis(50).build();
     tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), true).
         withTag("http.status_code", "404").start().finish();
     // Sleep for 60+ seconds
