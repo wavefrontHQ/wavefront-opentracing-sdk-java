@@ -27,6 +27,7 @@ import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 
 import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.DEBUG_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
 import static java.util.stream.Collectors.toMap;
 
@@ -150,6 +151,14 @@ public class WavefrontSpan implements Span {
         int priority = ((Number) value).intValue();
         forceSampling = priority > 0 ? Boolean.TRUE : Boolean.FALSE;
         spanContext = spanContext.withSamplingDecision(forceSampling);
+      }
+
+      // allow span to be reported if debug is set to true.
+      if (forceSampling == null || !forceSampling) {
+        if (key.equals(DEBUG_TAG_KEY) && value != null && value.toString().equals("true")) {
+          forceSampling = Boolean.TRUE;
+          spanContext = spanContext.withSamplingDecision(forceSampling);
+        }
       }
 
       if (Tags.ERROR.getKey().equals(key)) {
