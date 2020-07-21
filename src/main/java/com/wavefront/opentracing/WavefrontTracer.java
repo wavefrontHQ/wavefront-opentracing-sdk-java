@@ -1,6 +1,8 @@
 package com.wavefront.opentracing;
 
+import com.wavefront.internal.SpanDerivedMetricsUtils;
 import com.wavefront.internal.reporter.WavefrontInternalReporter;
+import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.opentracing.propagation.Propagator;
 import com.wavefront.opentracing.propagation.PropagatorRegistry;
 import com.wavefront.opentracing.reporting.CompositeReporter;
@@ -8,6 +10,7 @@ import com.wavefront.opentracing.reporting.Reporter;
 import com.wavefront.opentracing.reporting.WavefrontSpanReporter;
 import com.wavefront.sdk.appagent.jvm.reporter.WavefrontJvmReporter;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.application.ApplicationTags;
 import com.wavefront.sdk.common.application.HeartbeaterService;
 import com.wavefront.sdk.entities.tracing.sampling.Sampler;
@@ -17,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,8 +34,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import com.wavefront.internal.SpanDerivedMetricsUtils;
-
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -43,6 +45,7 @@ import io.opentracing.util.ThreadLocalScopeManager;
 import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.NULL_TAG_VAL;
+import static com.wavefront.sdk.common.Constants.SDK_METRIC_PREFIX;
 import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 import static io.opentracing.tag.Tags.SPAN_KIND;
@@ -155,11 +158,14 @@ public class WavefrontTracer implements Tracer, Closeable {
     Map<String, String> pointTags = new HashMap<>(applicationTags.toPointTags());
 
     WavefrontInternalReporter wfInternalReporter = new WavefrontInternalReporter.Builder().
-        prefixedWith("~sdk.java.opentracing").withSource(wfSpanReporter.getSource()).
+        prefixedWith(SDK_METRIC_PREFIX + ".opentracing").withSource(wfSpanReporter.getSource()).
         withReporterPointTags(pointTags).
         build(wfSpanReporter.getWavefrontSender());
     // Start the internal metrics reporter
     wfInternalReporter.start(1, TimeUnit.MINUTES);
+    double sdkVersion = Utils.getSemVer();
+    wfInternalReporter.newGauge(new MetricName("version", Collections.emptyMap()),
+        () -> (() -> sdkVersion));
 
     WavefrontInternalReporter wfDerivedReporter = new WavefrontInternalReporter.Builder().
         prefixedWith("tracing.derived").withSource(wfSpanReporter.getSource()).
