@@ -163,7 +163,7 @@ public class WavefrontTracer implements Tracer, Closeable {
         build(wfSpanReporter.getWavefrontSender());
     // Start the internal metrics reporter
     wfInternalReporter.start(1, TimeUnit.MINUTES);
-    double sdkVersion = Utils.getSemVer();
+    double sdkVersion = Utils.getSemVerGauge("wavefront-opentracing-sdk-java");
     wfInternalReporter.newGauge(new MetricName("version", Collections.emptyMap()),
         () -> (() -> sdkVersion));
 
