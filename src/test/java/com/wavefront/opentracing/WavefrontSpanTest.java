@@ -49,7 +49,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     wfSender.sendMetric(eq(
@@ -67,7 +67,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -102,7 +102,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        anyDouble(), eq(DEFAULT_SOURCE), anyObject());
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
     expectLastCall().atLeastOnce();
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
     // advance minute bin and change the below call to expectLastCall().atLeastOnce();
@@ -113,7 +113,7 @@ public class WavefrontSpanTest {
     expectLastCall().anyTimes();
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), eq(DEFAULT_SOURCE), anyObject());
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), anyObject());
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -153,12 +153,12 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.error.count"),
-        anyDouble(), eq(DEFAULT_SOURCE), eq(errorTags));
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), eq(errorTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -171,7 +171,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -208,7 +208,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        anyDouble(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyDouble(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -221,7 +221,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
@@ -257,7 +257,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.invocation.count"),
-        anyDouble(),  eq(DEFAULT_SOURCE), eq(pointTags));
+        anyDouble(), anyLong(),  eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     // TODO - change WavefrontInternalReporter.newWavefrontHistogram to pass in a clock to
@@ -270,7 +270,7 @@ public class WavefrontSpanTest {
 
     wfSender.sendDeltaCounter(eq(
         "∆tracing.derived.myApplication.myService.dummyOp.total_time.millis.count"),
-        anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
+        anyLong(), anyLong(), eq(DEFAULT_SOURCE), eq(pointTags));
     expectLastCall().atLeastOnce();
 
     replay(wfSender);
