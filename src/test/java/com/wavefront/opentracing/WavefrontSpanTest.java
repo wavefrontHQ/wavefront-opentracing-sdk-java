@@ -75,7 +75,7 @@ public class WavefrontSpanTest {
         new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
         buildApplicationTags()).setReportFrequenceMillis(50).build();
     tracer.buildSpan("dummyOp").start().finish();
-    // Sleep for 1 seconds
+    // Sleep for 1 second
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
@@ -122,7 +122,7 @@ public class WavefrontSpanTest {
         buildApplicationTags()).setReportFrequenceMillis(50).
         withSampler(new RateSampler(0.0)).build();
     tracer.buildSpan("dummyOp").withTag(DEBUG_TAG_KEY, true).start().finish();
-    // Sleep for 60+ seconds
+    // Sleep for 1 second
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
@@ -180,7 +180,7 @@ public class WavefrontSpanTest {
         buildApplicationTags()).setReportFrequenceMillis(50).build();
     tracer.buildSpan("dummyOp").withTag(Tags.ERROR.getKey(), true).
         withTag("http.status_code", "404").start().finish();
-    // Sleep for 60+ seconds
+    // Sleep for 1 second
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
@@ -231,7 +231,7 @@ public class WavefrontSpanTest {
         redMetricsCustomTagKeys(new HashSet<>(Arrays.asList("tenant", "env"))).build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
         withTag("env", "Staging").withTag("span.kind", "server").start().finish();
-    // Sleep for 1 seconds
+    // Sleep for 1 second
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
@@ -280,7 +280,7 @@ public class WavefrontSpanTest {
         build();
     tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").
         withTag("env", "Staging").start().finish();
-    // Sleep for 1 seconds
+    // Sleep for 1 second
     System.out.println("Sleeping for 1 second zzzzz .....");
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
