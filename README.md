@@ -154,10 +154,14 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
   // Step 1. Create ApplicationTags.
   ApplicationTags applicationTags = new ApplicationTags.Builder(application, service).build();
 
-  // Step 2. Create a WavefrontSender for sending trace data via a Wavefront proxy.
-  //         Assume you have installed and started the proxy on <proxyHostname>.
-  WavefrontSender wavefrontSender = new WavefrontProxyClient.Builder(<proxyHostname>).
-        metricsPort(2878).distributionPort(2878).tracingPort(30000).build();
+  // Step 2. Create a WavefrontSender and configure it to send data via a Wavefront proxy. WavefrontClientFactory is used to send data to multiple Wavefront services, such as the metrics port and the distribution port.
+  // Assume you have installed and started the proxy on <proxyHostname>.
+  WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
+    // Add a client to send metrics and distributions data to Wavefront. The default port is 2878
+    wavefrontClientFactory.addClient("http://<proxy_hostname>:2878/");
+    // Add a client to send traces and spans to Wavefront. The default port is 30000
+    wavefrontClientFactory.addClient("http://<proxy_hostname>:30000/");
+  WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 
   // Step 3. Create a WavefrontSpanReporter for reporting trace data that originates on <sourceName>.
   Reporter wfSpanReporter = new WavefrontSpanReporter.Builder().
@@ -167,7 +171,6 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
   return new WavefrontTracer.Builder(wfSpanReporter, applicationTags).build();
 }
 ```
-
 
 ### 1. Set Up Application Tags
 
