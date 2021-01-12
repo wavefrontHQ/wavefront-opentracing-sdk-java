@@ -2,6 +2,7 @@ package com.wavefront.opentracing.reporting;
 
 import com.wavefront.internal.reporter.WavefrontInternalReporter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
+import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.DeltaCounter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.opentracing.Reference;
 import com.wavefront.opentracing.WavefrontSpan;
@@ -43,9 +44,9 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
    * sets this internal metrics reporter. Though unlikely, marked as volatile for thread safety.
    */
   private volatile WavefrontInternalReporter metricsReporter;
-  private Counter spansDropped;
-  private Counter spansReceived;
-  private Counter reportErrors;
+  private DeltaCounter spansDropped;
+  private DeltaCounter spansReceived;
+  private DeltaCounter reportErrors;
 
   private volatile boolean stop = false;
 
@@ -234,11 +235,11 @@ public class WavefrontSpanReporter implements Reporter, Runnable {
     );
     metricsReporter.newGauge(new MetricName("reporter.queue.remaining_capacity",
         Collections.emptyMap()), () -> (() -> (double) spanBuffer.remainingCapacity()));
-    spansReceived = metricsReporter.newCounter(new MetricName("reporter.spans.received",
+    spansReceived = metricsReporter.newDeltaCounter(new MetricName("reporter.spans.received",
         Collections.emptyMap()));
-    spansDropped = metricsReporter.newCounter(new MetricName("reporter.spans.dropped",
+    spansDropped = metricsReporter.newDeltaCounter(new MetricName("reporter.spans.dropped",
         Collections.emptyMap()));
-    reportErrors = metricsReporter.newCounter(new MetricName("reporter.errors",
+    reportErrors = metricsReporter.newDeltaCounter(new MetricName("reporter.errors",
         Collections.emptyMap()));
   }
 
