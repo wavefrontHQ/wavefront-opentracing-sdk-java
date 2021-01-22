@@ -1,6 +1,6 @@
 package com.wavefront.opentracing;
 
-import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.Counter;
+import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.DeltaCounter;
 import com.wavefront.internal_reporter_java.io.dropwizard.metrics5.MetricName;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Pair;
@@ -47,7 +47,7 @@ public class WavefrontSpan implements Span {
   private final List<Reference> parents;
   private final List<Reference> follows;
   @Nullable
-  private final Counter spansDiscarded;
+  private final DeltaCounter spansDiscarded;
 
   @Nullable
   private Map<String, Pair<String, String>> singleValuedTags;
@@ -79,7 +79,7 @@ public class WavefrontSpan implements Span {
     this.follows = follows;
 
     spansDiscarded = tracer.getWfInternalReporter() == null ? null :
-        tracer.getWfInternalReporter().newCounter(
+        tracer.getWfInternalReporter().newDeltaCounter(
             new MetricName("spans.discarded", Collections.emptyMap()));
 
     List<Pair<String, String>> globalTags = tracer.getTags();
