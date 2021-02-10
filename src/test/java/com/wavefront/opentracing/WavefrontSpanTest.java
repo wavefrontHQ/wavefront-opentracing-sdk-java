@@ -5,6 +5,9 @@ import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.sampling.RateSampler;
 
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,11 +25,13 @@ import static com.wavefront.sdk.common.Constants.DEBUG_TAG_KEY;
 import static org.easymock.EasyMock.anyDouble;
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * WavefrontSpanTest to test spans, generated metrics and component heartbeat.
@@ -285,6 +290,54 @@ public class WavefrontSpanTest {
     Thread.sleep(1000);
     System.out.println("Resuming execution .....");
     verify(wfSender);
+  }
+
+  @Test
+  public void testExcludeCustomRedMetricsTagsFromHeartbeatMetrics() throws IOException,
+      InterruptedException {
+    String operationName = "dummyOp";
+    Map<String, String> pointTags = pointTags(operationName, new HashMap<String, String>() {{
+      put("span.kind", "none");
+      put("tenant", "tenant1");
+    }});
+
+    Capture<Map<String, String>> capture = Capture.newInstance(CaptureType.ALL);
+    WavefrontSender wfSender = createMock(WavefrontSender.class);
+    wfSender.sendSpan(eq(operationName), anyLong(), anyLong(), eq(DEFAULT_SOURCE),
+        anyObject(), anyObject(), eq(Collections.emptyList()), eq(Collections.emptyList()),
+        anyObject(), eq(Collections.emptyList()));
+    expectLastCall();
+
+    wfSender.sendMetric(eq("~component.heartbeat"), anyDouble(), anyLong(),
+        eq(DEFAULT_SOURCE), EasyMock.capture(capture));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendDeltaCounter(anyString(), anyDouble(), anyLong(), eq(DEFAULT_SOURCE),
+        eq(pointTags));
+    expectLastCall().atLeastOnce();
+
+    wfSender.sendDistribution(anyObject(), anyObject(), anyObject(), anyLong(), eq(DEFAULT_SOURCE),
+        eq(pointTags));
+    expectLastCall().anyTimes();
+
+    replay(wfSender);
+
+    // Set customTagKeys as ["tenant] and exclude it from heartbeat metrics.
+    WavefrontTracer tracer = new WavefrontTracer.Builder(
+        new WavefrontSpanReporter.Builder().withSource(DEFAULT_SOURCE).build(wfSender),
+        buildApplicationTags()).
+        redMetricsCustomTagKeys(new HashSet<>(Collections.singletonList("tenant"))).
+        excludeCustomTagsFromHeartbeatMetric().setReportFrequenceMillis(50).
+        build();
+    tracer.buildSpan("dummyOp").withTag("tenant", "tenant1").start().finish();
+    // Sleep for 1 second
+    System.out.println("Sleeping for 1 second zzzzz .....");
+    Thread.sleep(1000);
+    System.out.println("Resuming execution .....");
+    verify(wfSender);
+
+    // Verify there's no tag of red metrics contains custom red metrics key: "tenant"
+    capture.getValues().forEach(tags -> assertFalse(tags.containsKey("tenant")));
   }
 
   private Map<String, String> pointTags(String operationName, Map<String, String> customTags) {
