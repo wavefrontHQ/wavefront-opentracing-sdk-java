@@ -77,6 +77,7 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final Supplier<Long> reportFrequencyMillis;
   private final ApplicationTags applicationTags;
   private final Set<String> redMetricsCustomTagKeys;
+  private final boolean addCustomTagsToHeartbeatMetric;
 
   private final static Pattern WHITESPACE = Pattern.compile("[\\s]+");
 
@@ -93,6 +94,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.applicationTags = builder.applicationTags;
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
     this.redMetricsCustomTagKeys = builder.redMetricsCustomTagKeys;
+    this.addCustomTagsToHeartbeatMetric = builder.addCustomTagsToHeartbeatMetric;
 
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
@@ -279,7 +281,7 @@ public class WavefrontTracer implements Tracer, Closeable {
             redMetricsCustomTagKeys,
             span.getTagsAsList()
         );
-    if (heartbeaterService != null) {
+    if (heartbeaterService != null && addCustomTagsToHeartbeatMetric) {
       heartbeaterService.reportCustomTags(heartbeatMetricKey._1);
     }
   }
@@ -328,6 +330,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     private final Set<String> redMetricsCustomTagKeys = new HashSet<>();
     private boolean includeJvmMetrics = true;
     private final PropagatorRegistry registry = new PropagatorRegistry();
+    private boolean addCustomTagsToHeartbeatMetric = true;
 
     /**
      * Constructor.
@@ -428,6 +431,17 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public Builder excludeJvmMetrics() {
       includeJvmMetrics = false;
+      return this;
+    }
+
+    /**
+     * Invoke this method if you don't want to append your customTags defined within
+     * {@link Builder#redMetricsCustomTagKeys} to the Heartbeat metrics ("~component.heartbeat").
+     *
+     * @return {@code this}
+     */
+    public Builder excludeCustomTagsFromHeartbeatMetric() {
+      addCustomTagsToHeartbeatMetric = false;
       return this;
     }
 
