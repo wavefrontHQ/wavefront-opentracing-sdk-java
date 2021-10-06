@@ -158,6 +158,7 @@ Tracer createWavefrontTracer(String application, String service) throws IOExcept
   // Assume you have installed and started the proxy on <proxyHostname>.
   WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
     // Add a client to send metrics and distributions data to Wavefront. The default port is 2878
+    // From proxy version 9.0 onwards, you can send metrics and spans using the port 2878.
     wavefrontClientFactory.addClient("http://<proxy_hostname>:2878/");
     // Add a client to send traces and spans to Wavefront. The default port is 30000
     wavefrontClientFactory.addClient("http://<proxy_hostname>:30000/");
