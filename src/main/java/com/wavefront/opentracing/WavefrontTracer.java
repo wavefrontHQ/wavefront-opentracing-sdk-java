@@ -79,6 +79,8 @@ public class WavefrontTracer implements Tracer, Closeable {
   private final Set<String> redMetricsCustomTagKeys;
   private final boolean addCustomTagsToHeartbeatMetric;
 
+  private final boolean useSpanId128Bit;
+
   private final static Pattern WHITESPACE = Pattern.compile("[\\s]+");
 
   private final static String WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated";
@@ -95,7 +97,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     this.reportFrequencyMillis = builder.reportingFrequencyMillis;
     this.redMetricsCustomTagKeys = builder.redMetricsCustomTagKeys;
     this.addCustomTagsToHeartbeatMetric = builder.addCustomTagsToHeartbeatMetric;
-
+    this.useSpanId128Bit = builder.useSpanId128Bit;
     /**
      * Tracing spans will be converted to metrics and histograms and will be reported to Wavefront
      * only if you use the WavefrontSpanReporter
@@ -314,6 +316,10 @@ public class WavefrontTracer implements Tracer, Closeable {
     return tags;
   }
 
+  boolean isUseSpanId128Bit(){
+    return useSpanId128Bit;
+  }
+
   /**
    * A builder for {@link WavefrontTracer} instances.
    */
@@ -332,6 +338,7 @@ public class WavefrontTracer implements Tracer, Closeable {
     private final PropagatorRegistry registry = new PropagatorRegistry();
     private boolean addCustomTagsToHeartbeatMetric = true;
 
+    private boolean useSpanId128Bit = true;
     /**
      * Constructor.
      */
@@ -471,6 +478,18 @@ public class WavefrontTracer implements Tracer, Closeable {
      */
     public Builder redMetricsCustomTagKeys(Set<String> redMetricsCustomTagKeys) {
       this.redMetricsCustomTagKeys.addAll(redMetricsCustomTagKeys);
+      return this;
+    }
+
+    /**
+     * Set the span id to use 128 bit.
+     * Default is true (to retain backward compatability)
+     * If true will use 128 bit otherwise uses 64 bit span id
+     * @param useSpanId128Bit true if span id has to be 128 bit otherwise false
+     * @return {@code this}
+     */
+    public Builder useSpanId128Bit(boolean useSpanId128Bit){
+      this.useSpanId128Bit = useSpanId128Bit;
       return this;
     }
 
