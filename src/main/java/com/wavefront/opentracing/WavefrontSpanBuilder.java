@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -42,6 +43,8 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
 
   private long startTimeMicros;
   private boolean ignoreActiveSpan = false;
+
+  private boolean useFullSpanId = true;
   private final List<Pair<String, String>> tags = new ArrayList<>();
 
   public WavefrontSpanBuilder(String operationName, WavefrontTracer tracer) {
@@ -138,7 +141,7 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
   }
 
   private WavefrontSpanContext createSpanContext() {
-    UUID spanId = UUID.randomUUID();
+    UUID spanId = generateSpanId();
     WavefrontSpanContext traceCtx = traceAncestry();
     UUID traceId = (traceCtx == null) ? UUID.randomUUID() : traceCtx.getTraceId();
     Boolean sampling = (traceCtx == null) ? null : traceCtx.getSamplingDecision();
@@ -192,5 +195,17 @@ public class WavefrontSpanBuilder implements Tracer.SpanBuilder {
 
     // root span if parentSpan is null
     return parentSpan == null ? null : ((WavefrontSpanContext) parentSpan.context());
+  }
+
+  private UUID generateSpanId() {
+    if (tracer.isUseSpanId128Bit()) return UUID.randomUUID();
+
+    // Generate a span id that can be represented in 64 bits, allowing lossless conversion and
+    // propagation to systems such as Zipkin and OpenTelemetry (which specify 64-bit span ids)
+    long id;
+    do {
+      id = ThreadLocalRandom.current().nextLong();
+    } while (id == 0);
+    return new UUID(0L, id);
   }
 }

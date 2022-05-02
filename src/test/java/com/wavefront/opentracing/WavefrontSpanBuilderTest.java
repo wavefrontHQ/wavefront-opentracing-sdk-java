@@ -224,4 +224,26 @@ public class WavefrontSpanBuilderTest {
     assertNotNull(span.context().getBaggage());
     assertTrue(span.context().getBaggage().isEmpty());
   }
+
+  @Test
+  public void test128BitSpanId() {
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).build();
+    Span activeSpan = tracer.buildSpan("testOp").start();
+    tracer.activateSpan(activeSpan);
+    final String spanId = activeSpan.context().toSpanId();
+    final UUID spanUUID = UUID.fromString(spanId);
+    assertNotEquals(0,spanUUID.getMostSignificantBits());
+  }
+
+  @Test
+  public void test64BitSpanId() {
+    WavefrontTracer tracer = new WavefrontTracer.Builder(new ConsoleReporter(DEFAULT_SOURCE),
+        buildApplicationTags()).useSpanId128Bit(false).build();
+    Span activeSpan = tracer.buildSpan("testOp").start();
+    tracer.activateSpan(activeSpan);
+    final String spanId = activeSpan.context().toSpanId();
+    final UUID spanUUID = UUID.fromString(spanId);
+    assertEquals(0,spanUUID.getMostSignificantBits());
+  }
 }
