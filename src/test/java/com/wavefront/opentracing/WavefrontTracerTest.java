@@ -132,6 +132,7 @@ public class WavefrontTracerTest {
     Map<String, String> eventsMap = new HashMap<String, String>() {{
       put("event.name", "foo");
       put("event.kind", "error");
+      put("event.metadata", null);
     }};
     span.log(timeStamp2, eventsMap);
     List<SpanLog> spanLogs = span.getSpanLogs();
@@ -139,8 +140,9 @@ public class WavefrontTracerTest {
     assertEquals(timeStamp1, spanLogs.get(0).getTimestamp());
     assertEquals(logMessage, spanLogs.get(0).getFields().get(Fields.EVENT));
     assertEquals(timeStamp2, spanLogs.get(1).getTimestamp());
-    assertEquals(2, spanLogs.get(1).getFields().size());
+    assertEquals(3, spanLogs.get(1).getFields().size());
     assertEquals("foo", spanLogs.get(1).getFields().get("event.name"));
     assertEquals("error", spanLogs.get(1).getFields().get("event.kind"));
+    assertEquals("", spanLogs.get(1).getFields().get("event.metadata"));
   }
 }

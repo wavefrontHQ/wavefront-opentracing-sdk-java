@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -211,7 +212,7 @@ public class WavefrontSpan implements Span {
     }
     if (fields != null) {
       Map<String, String> finalFields = fields.entrySet().stream().collect(
-          toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
+          toMap(Map.Entry::getKey, entry -> Objects.toString(entry.getValue(), "")));
       spanLogs.add(new SpanLog(currentTimeMicros, finalFields));
     }
     return this;
