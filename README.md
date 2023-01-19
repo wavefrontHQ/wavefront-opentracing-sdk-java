@@ -1,6 +1,9 @@
 # wavefront-opentracing-sdk-java
 [![build status][ci-img]][ci] [![Released Version][maven-img]][maven] [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
 
+We are deprecating the OpenTracing repositories, and they are no longer supported. To migrate from OpenTracing to OpenTelemetry, see the migration steps in our documentation. ((use this to link it like a hyperlink https://docs.wavefront.com/opentracing_to_opentelemetry_migration.html ))
+Contact our support team if you have any questions (support@wavefront.com). Thank you! 
+
 ## Table of Content
 * [Prerequisites](#Prerequisites)
 * [Usage](#Usage)
